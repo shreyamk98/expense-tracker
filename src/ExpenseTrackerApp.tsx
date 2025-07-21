@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { MantineProvider, AppShell, Container } from '@mantine/core';
-import { ApolloProvider } from '@apollo/client';
 import theme from './theme/theme';
-import { apolloClient } from './graphql/client';
 import { AppProvider } from './context/AppContext';
-import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { AppHeader } from './components/Navigation/AppHeader';
 import { AppSidebar } from './components/Navigation/AppSidebar';
 import { MobileDrawer } from './components/Navigation/MobileDrawer';
 import { AppRoutes } from './routes/AppRoutes';
 import { useAppContext } from './context/AppContext';
-import { useAuth } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { useResponsiveNavigation } from './hooks/useResponsiveNavigation';
 import { LoadingOverlay } from './components/ExpenseTracker/LoadingOverlay';
 import { ErrorBoundary } from './components/ExpenseTracker/ErrorBoundary';
@@ -83,7 +80,7 @@ const ExpenseTrackerContent: React.FC = () => {
 	);
 };
 
-const AppWithTheme: React.FC = () => {
+const AppWithAuth: React.FC = () => {
 	const { authState } = useAuth();
 	const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light');
 
@@ -117,11 +114,9 @@ const AppWithTheme: React.FC = () => {
 export const ExpenseTrackerApp: React.FC = () => {
 	return (
 		<ErrorBoundary>
-			<ApolloProvider client={apolloClient}>
-				<AuthProvider>
-					<AppWithTheme />
-				</AuthProvider>
-			</ApolloProvider>
+			<AuthProvider>
+				<AppWithAuth />
+			</AuthProvider>
 		</ErrorBoundary>
 	);
 };
