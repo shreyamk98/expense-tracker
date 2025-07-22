@@ -1,7 +1,9 @@
 import React from 'react';
-import { Card, Text, Group, Stack, Badge, Progress } from '@mantine/core';
+import { Group, Stack, Badge, Progress, Text } from '@mantine/core';
 import { DonutChart } from '@mantine/charts';
 import { DollarSign } from 'lucide-react';
+import { ChartCard } from './components/ChartCard';
+import { EmptyState } from './components/EmptyState';
 
 interface ExpenseSizeData {
   name: string;
@@ -26,14 +28,13 @@ export const ExpenseSizeDistribution: React.FC<ExpenseSizeDistributionProps> = (
   const totalCount = data.reduce((sum, item) => sum + item.count, 0);
 
   return (
-    <Card p="md" withBorder>
-      <Group justify="space-between" mb="md">
-        <Text fw={500}>Expense Size Distribution</Text>
-        <Badge variant="light" leftSection={<DollarSign size={12} />}>
-          Spending Patterns
-        </Badge>
-      </Group>
-
+    <ChartCard
+      title="Expense Size Distribution"
+      badge={{
+        text: "Spending Patterns",
+        icon: <DollarSign size={12} />
+      }}
+    >
       {data.length > 0 ? (
         <>
           <DonutChart
@@ -90,10 +91,8 @@ export const ExpenseSizeDistribution: React.FC<ExpenseSizeDistributionProps> = (
           </Text>
         </>
       ) : (
-        <Text ta="center" c="dimmed" py="xl">
-          No expense data available
-        </Text>
+        <EmptyState title="No expense data available" />
       )}
-    </Card>
+    </ChartCard>
   );
 };

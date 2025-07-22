@@ -1,16 +1,12 @@
 import React from 'react';
-import { Card, Text, Group, Stack, Badge } from '@mantine/core';
+import { Stack, Text } from '@mantine/core';
 import { BarChart } from '@mantine/charts';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-
-interface CategoryComparisonData {
-  category: string;
-  currentMonth: number;
-  previousMonth: number;
-  change: number;
-  changePercent: number;
-  color: string;
-}
+import { ChartCard } from './components/ChartCard';
+import { EmptyState } from './components/EmptyState';
+import { LegendItem } from './components/LegendItem';
+import { CategoryComparisonData } from './utils/dataProcessors';
+import { getTrendIcon, getTrendColor } from './utils/insightsUtils';
 
 interface CategoryComparisonChartProps {
   data: CategoryComparisonData[];
@@ -21,27 +17,22 @@ export const CategoryComparisonChart: React.FC<CategoryComparisonChartProps> = (
   data,
   formatCurrency
 }) => {
-  const getTrendIcon = (change: number) => {
-    if (change > 5) return TrendingUp;
-    if (change < -5) return TrendingDown;
-    return Minus;
-  };
-
-  const getTrendColor = (change: number) => {
-    if (change > 5) return 'red';
-    if (change < -5) return 'green';
-    return 'gray';
+  const getIconComponent = (change: number) => {
+    const iconType = getTrendIcon(change);
+    switch (iconType) {
+      case 'up': return TrendingUp;
+      case 'down': return TrendingDown;
+      default: return Minus;
+    }
   };
 
   return (
-    <Card p="md" withBorder>
-      <Group justify="space-between" mb="md">
-        <Text fw={500}>Category Comparison</Text>
-        <Badge variant="light">
-          Current vs Previous Month
-        </Badge>
-      </Group>
-
+    <ChartCard
+      title="Category Comparison"
+      badge={{
+        text: "Current vs Previous Month"
+      }}
+    >
       {data.length > 0 ? (
         <>
           <BarChart
@@ -61,36 +52,21 @@ export const CategoryComparisonChart: React.FC<CategoryComparisonChartProps> = (
           
           <Stack gap="xs">
             {data.map((item, index) => {
-              const TrendIcon = getTrendIcon(item.changePercent);
+              const TrendIcon = getIconComponent(item.changePercent);
               const trendColor = getTrendColor(item.changePercent);
               
               return (
-                <Group key={index} justify="space-between">
-                  <Group gap="xs">
-                    <div
-                      style={{
-                        width: 12,
-                        height: 12,
-                        backgroundColor: item.color,
-                        borderRadius: 2
-                      }}
-                    />
-                    <Text size="sm">{item.category}</Text>
-                  </Group>
-                  <Group gap="xs">
-                    <Text size="sm">
-                      {formatCurrency(item.currentMonth)}
-                    </Text>
-                    <Badge 
-                      variant="light" 
-                      color={trendColor}
-                      size="xs"
-                      leftSection={<TrendIcon size={10} />}
-                    >
-                      {item.changePercent > 0 ? '+' : ''}{item.changePercent.toFixed(1)}%
-                    </Badge>
-                  </Group>
-                </Group>
+                <LegendItem
+                  key={index}
+                  color={item.color}
+                  label={item.category}
+                  value={formatCurrency(item.currentMonth)}
+                  badge={{
+                    text: `${item.changePercent > 0 ? '+' : ''}${item.changePercent.toFixed(1)}%`,
+                    color: trendColor
+                  }}
+                  rightContent={<TrendIcon size={10} />}
+                />
               );
             })}
           </Stack>
@@ -100,10 +76,8 @@ export const CategoryComparisonChart: React.FC<CategoryComparisonChartProps> = (
           </Text>
         </>
       ) : (
-        <Text ta="center" c="dimmed" py="xl">
-          Insufficient data for comparison
-        </Text>
+        <EmptyState title="Insufficient data for comparison" />
       )}
-    </Card>
+    </ChartCard>
   );
 };
