@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Text, Group, Stack, TextInput, Select, Button, SimpleGrid, Accordion } from '@mantine/core';
+import { Text, Group, Stack, TextInput, Select, Button, SimpleGrid, Accordion } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useMediaQuery } from '@mantine/hooks';
 import { Search, Filter } from 'lucide-react';
@@ -75,7 +75,12 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
 				clearable
 			/>
 
-			<DateInput placeholder="Filter by date" value={dateFilter} onChange={onDateChange} clearable />
+			<DateInput
+				placeholder="Filter by date"
+				value={dateFilter}
+				onChange={(value) => onDateChange(value ? new Date(value) : null)}
+				clearable
+			/>
 		</Stack>
 	);
 
@@ -146,7 +151,12 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
 					clearable
 				/>
 
-				<DateInput placeholder="Filter by date" value={dateFilter} onChange={onDateChange} clearable />
+				<DateInput
+					placeholder="Filter by date"
+					value={dateFilter}
+					onChange={(value) => onDateChange(value ? new Date(value) : null)}
+					clearable
+				/>
 			</SimpleGrid>
 		</Stack>
 	);

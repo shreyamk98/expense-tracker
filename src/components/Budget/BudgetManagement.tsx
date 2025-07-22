@@ -5,7 +5,6 @@ import {
 	Group,
 	Stack,
 	Button,
-	Modal,
 	TextInput,
 	Select,
 	NumberInput,
@@ -16,6 +15,7 @@ import {
 	Alert,
 } from '@mantine/core';
 import { Plus, Edit, Trash2, AlertTriangle, Target } from 'lucide-react';
+import { FormModal } from '../common/BaseModal';
 import { useAppContext } from '../../context/AppContext';
 import { formatCategory } from '../../utils/formatters';
 import { ExpenseCategory, TimePeriod } from '../../types/enums';
@@ -29,7 +29,7 @@ interface BudgetFormData {
 }
 
 export const BudgetManagement: React.FC = () => {
-	const { state, setBudget, formatCurrency } = useAppContext();
+	const { state, setBudget, formatCurrency, getCurrentCurrency } = useAppContext();
 	const { budgets, expenses } = state;
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -165,6 +165,17 @@ export const BudgetManagement: React.FC = () => {
 		label: period.charAt(0).toUpperCase() + period.slice(1),
 	}));
 
+	// Helper function to get currency symbol
+	const getCurrencySymbol = (currency: string): string => {
+		const currencySymbols: Record<string, string> = {
+			USD: '$',
+			EUR: '€',
+			GBP: '£',
+			INR: '₹',
+		};
+		return currencySymbols[currency] || '$';
+	};
+
 	return (
 		<Stack gap="lg">
 			{/* Header */}
@@ -272,13 +283,18 @@ export const BudgetManagement: React.FC = () => {
 			)}
 
 			{/* Budget Form Modal */}
-			<Modal
+			<FormModal
 				opened={isModalOpen}
 				onClose={handleCloseModal}
+				onSubmit={handleSubmit}
 				title={editingBudget ? 'Edit Budget' : 'Create Budget'}
+				description={editingBudget ? 'Update your budget settings' : 'Set spending limits for a category'}
 				size="md"
+				submitLabel={editingBudget ? 'Update Budget' : 'Create Budget'}
+				submitIcon={editingBudget ? <Edit size={16} /> : <Plus size={16} />}
+				loading={isLoading}
 			>
-				<Stack gap="md">
+				<Stack gap="lg">
 					{error && (
 						<Alert color="red" variant="light">
 							{error}
@@ -311,7 +327,7 @@ export const BudgetManagement: React.FC = () => {
 						}
 						min={0}
 						step={100}
-						prefix="$"
+						prefix={getCurrencySymbol(getCurrentCurrency())}
 						required
 					/>
 
@@ -329,20 +345,8 @@ export const BudgetManagement: React.FC = () => {
 						required
 					/>
 
-					<Group justify="flex-end" gap="sm" mt="md">
-						<Button variant="subtle" onClick={handleCloseModal}>
-							Cancel
-						</Button>
-						<Button
-							onClick={handleSubmit}
-							loading={isLoading}
-							leftSection={editingBudget ? <Edit size={16} /> : <Plus size={16} />}
-						>
-							{editingBudget ? 'Update Budget' : 'Create Budget'}
-						</Button>
-					</Group>
 				</Stack>
-			</Modal>
+			</FormModal>
 		</Stack>
 	);
 };

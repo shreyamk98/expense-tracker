@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Text, Group, Stack, Button, Modal, Image, Pagination } from '@mantine/core';
+import { Text, Group, Stack, Button, Image, Pagination } from '@mantine/core';
 import { FilterSection } from './FilterSection';
 import { ExpenseCard } from './ExpenseCard';
 import { ExpenseListProps } from '../../types/schema';
 import { PaymentType } from '../../types/enums';
 import { useAppContext } from '../../context/AppContext';
+import { BaseModal, ConfirmationModal } from '../common/BaseModal';
 
 export const ExpenseList: React.FC<ExpenseListProps> = ({ onEdit, onViewReceipt, paymentMethods }) => {
 	const { state, formatCurrency, deleteExpense } = useAppContext();
@@ -155,24 +156,39 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({ onEdit, onViewReceipt,
 			)}
 
 			{/* Receipt Modal */}
-			<Modal opened={receiptModalOpen} onClose={() => setReceiptModalOpen(false)} title="Receipt" size="md">
-				<Image src={selectedReceipt} alt="Receipt" fit="contain" style={{ maxHeight: '70vh' }} />
-			</Modal>
+			<BaseModal
+				opened={receiptModalOpen}
+				onClose={() => setReceiptModalOpen(false)}
+				title="Receipt"
+				description="View expense receipt"
+				size="lg"
+				secondaryAction={{
+					label: 'Close',
+					onClick: () => setReceiptModalOpen(false)
+				}}
+			>
+				<Image 
+					src={selectedReceipt} 
+					alt="Receipt" 
+					fit="contain" 
+					style={{ 
+						maxHeight: '60vh',
+						borderRadius: '8px',
+						border: '1px solid var(--mantine-color-default-border)'
+					}} 
+				/>
+			</BaseModal>
 
 			{/* Delete Confirmation Modal */}
-			<Modal opened={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Confirm Delete" size="sm">
-				<Stack gap="md">
-					<Text>Are you sure you want to delete this expense? This action cannot be undone.</Text>
-					<Group justify="flex-end" gap="sm">
-						<Button variant="subtle" onClick={() => setDeleteModalOpen(false)}>
-							Cancel
-						</Button>
-						<Button color="red" onClick={handleDeleteConfirm}>
-							Delete
-						</Button>
-					</Group>
-				</Stack>
-			</Modal>
+			<ConfirmationModal
+				opened={deleteModalOpen}
+				onClose={() => setDeleteModalOpen(false)}
+				onConfirm={handleDeleteConfirm}
+				title="Delete Expense"
+				message="Are you sure you want to delete this expense? This action cannot be undone."
+				confirmLabel="Delete"
+				confirmColor="red"
+			/>
 		</Stack>
 	);
 };

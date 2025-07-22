@@ -6,7 +6,6 @@ import {
   Stack,
   Switch,
   Button,
-  Modal,
   TextInput,
   Select,
   NumberInput,
@@ -16,6 +15,7 @@ import {
   useMantineTheme
 } from '@mantine/core';
 import { Plus, Edit, Trash2, CreditCard, Smartphone } from 'lucide-react';
+import { FormModal } from '../common/BaseModal';
 import { useAppContext } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { PaymentMethodFormProps } from '../../types/schema';
@@ -342,8 +342,16 @@ const CardModal: React.FC<CardModalProps> = ({ isOpen, onClose, onSubmit, editin
   };
 
   return (
-    <Modal opened={isOpen} onClose={onClose} title={editingCard ? "Edit Card" : "Add Card"}>
-      <Stack gap="md">
+    <FormModal
+      opened={isOpen}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      title={editingCard ? "Edit Card" : "Add Card"}
+      description={editingCard ? "Update your card details" : "Add a new payment card"}
+      submitLabel={editingCard ? "Update Card" : "Add Card"}
+      submitIcon={editingCard ? <Edit size={16} /> : <Plus size={16} />}
+    >
+      <Stack gap="lg">
         <TextInput
           label="Card Name"
           placeholder="e.g., HDFC Credit Card"
@@ -377,15 +385,8 @@ const CardModal: React.FC<CardModalProps> = ({ isOpen, onClose, onSubmit, editin
           checked={formData.isDefault}
           onChange={(event) => setFormData(prev => ({ ...prev, isDefault: event.currentTarget.checked }))}
         />
-
-        <Group justify="flex-end" gap="sm">
-          <Button variant="subtle" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit}>
-            {editingCard ? "Update" : "Add"} Card
-          </Button>
-        </Group>
       </Stack>
-    </Modal>
+    </FormModal>
   );
 };
 
@@ -428,8 +429,16 @@ const UPIModal: React.FC<UPIModalProps> = ({ isOpen, onClose, onSubmit, editingU
   ];
 
   return (
-    <Modal opened={isOpen} onClose={onClose} title={editingUPI ? "Edit UPI App" : "Add UPI App"}>
-      <Stack gap="md">
+    <FormModal
+      opened={isOpen}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      title={editingUPI ? "Edit UPI App" : "Add UPI App"}
+      description={editingUPI ? "Update UPI app settings" : "Add a new UPI payment method"}
+      submitLabel={editingUPI ? "Update UPI App" : "Add UPI App"}
+      submitIcon={editingUPI ? <Edit size={16} /> : <Plus size={16} />}
+    >
+      <Stack gap="lg">
         <Select
           label="UPI App"
           data={upiOptions}
@@ -443,14 +452,7 @@ const UPIModal: React.FC<UPIModalProps> = ({ isOpen, onClose, onSubmit, editingU
           checked={formData.isEnabled}
           onChange={(event) => setFormData(prev => ({ ...prev, isEnabled: event.currentTarget.checked }))}
         />
-
-        <Group justify="flex-end" gap="sm">
-          <Button variant="subtle" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit}>
-            {editingUPI ? "Update" : "Add"} UPI App
-          </Button>
-        </Group>
       </Stack>
-    </Modal>
+    </FormModal>
   );
 };

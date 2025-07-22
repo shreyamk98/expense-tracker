@@ -13,8 +13,10 @@ import {
   useMantineTheme
 } from '@mantine/core';
 import { PieChart, AreaChart } from '@mantine/charts';
-import { Plus, TrendingUp, DollarSign, Calendar, Receipt } from 'lucide-react';
+import { Plus, TrendingUp, Calendar } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
+import { CurrencyIcon } from '../common/CurrencyIcon';
+import { ReceiptIcon } from '../common/ReceiptIcon';
 import { formatDate, formatCategory } from '../../utils/formatters';
 import { ExpenseCategory, PaymentType } from '../../types/enums';
 
@@ -31,7 +33,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onViewInsights,
   onManageBudgets
 }) => {
-  const { state, formatCurrency } = useAppContext();
+  const { state, formatCurrency, getCurrentCurrency } = useAppContext();
   const { expenses, budgets } = state;
   const navigate = useNavigate();
   const theme = useMantineTheme();
@@ -151,7 +153,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <Text size="xs" c="dimmed">This Month</Text>
             </div>
             <ActionIcon size="xl" variant="light" color="red">
-              <DollarSign size={24} />
+              <CurrencyIcon currency={getCurrentCurrency()} size={24} />
             </ActionIcon>
           </Group>
         </Card>
@@ -166,7 +168,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <Text size="xs" c="dimmed">This Month</Text>
             </div>
             <ActionIcon size="xl" variant="light" color="blue">
-              <Receipt size={24} />
+              <ReceiptIcon currency={getCurrentCurrency()} size={24} />
             </ActionIcon>
           </Group>
         </Card>
@@ -191,7 +193,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div>
               <Text size="sm" c="dimmed">Last Expense</Text>
               <Text size="xl" fw={600}>
-                {recentExpenses.length > 0 ? formatCurrency(recentExpenses[0].amount) : '$0'}
+                {recentExpenses.length > 0 ? formatCurrency(recentExpenses[0].amount) : formatCurrency(0)}
               </Text>
               <Text size="xs" c="dimmed">
                 {recentExpenses.length > 0 ? formatDate(new Date(recentExpenses[0].date)) : 'No expenses'}

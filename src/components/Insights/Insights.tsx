@@ -157,7 +157,7 @@ export const Insights: React.FC = () => {
             {categoryData.length > 0 ? categoryData[0].name : 'None'}
           </Text>
           <Text size="xs" c="dimmed">
-            {categoryData.length > 0 ? formatCurrency(categoryData[0].value) : '$0'}
+            {categoryData.length > 0 ? formatCurrency(categoryData[0].value) : formatCurrency(0)}
           </Text>
         </Card>
       </SimpleGrid>

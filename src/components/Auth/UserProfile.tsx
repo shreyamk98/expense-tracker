@@ -9,7 +9,6 @@ import {
   TextInput,
   Select,
   Switch,
-  Modal,
   FileButton,
   ActionIcon,
   Badge,
@@ -17,6 +16,7 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { Edit, Camera, LogOut, Trash2, Save, X } from 'lucide-react';
+import { ConfirmationModal } from '../common/BaseModal';
 import { useAuth } from '../../context/AuthContext';
 import { useAppContext } from '../../context/AppContext';
 import { User } from '../../types/schema';
@@ -346,24 +346,15 @@ export const UserProfile: React.FC = () => {
       )}
 
       {/* Logout Confirmation Modal */}
-      <Modal
+      <ConfirmationModal
         opened={logoutModalOpen}
         onClose={() => setLogoutModalOpen(false)}
+        onConfirm={handleLogout}
         title="Confirm Logout"
-        size="sm"
-      >
-        <Stack gap="md">
-          <Text>Are you sure you want to logout? You will need to sign in again to access your account.</Text>
-          <Group justify="flex-end" gap="sm">
-            <Button variant="subtle" onClick={() => setLogoutModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button color="red" onClick={handleLogout}>
-              Logout
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+        message="Are you sure you want to logout? You will need to sign in again to access your account."
+        confirmLabel="Logout"
+        confirmColor="red"
+      />
     </Stack>
   );
 };
