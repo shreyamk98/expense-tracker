@@ -7,15 +7,24 @@ const StyledModal = styled(Modal)`
 	.mantine-Modal-content {
 		border-radius: 12px;
 		overflow: visible;
+		background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+		border: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+		box-shadow: light-dark(0 10px 25px rgba(0, 0, 0, 0.1), 0 10px 25px rgba(0, 0, 0, 0.4));
 	}
 	.mantine-Modal-header {
 		padding-left: 16px;
 		padding-right: 16px;
-		border-bottom: 1px solid #e9ecef;
+		border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+		background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
 	}
 	.mantine-Modal-body {
 		padding: 0;
 		overflow: visible;
+		background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+	}
+	.mantine-Modal-overlay {
+		background: light-dark(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+		backdrop-filter: blur(3px);
 	}
 `;
 
@@ -23,17 +32,20 @@ const ModalContent = styled.div`
 	flex: 1;
 	overflow-y: auto;
 	padding: 16px;
+	background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
 `;
 
 const ModalFooter = styled(Group)`
 	padding-top: 16px;
 	position: sticky;
 	bottom: 0;
-	background: white;
-	border-top: 1px solid #e9ecef;
+	background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
+	border-top: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
 	padding-left: 16px;
 	padding-right: 16px;
 	padding-bottom: 16px;
+	border-bottom-left-radius: 12px;
+	border-bottom-right-radius: 12px;
 `;
 
 interface BaseModalProps {
@@ -83,8 +95,8 @@ export const BaseModal: React.FC<BaseModalProps> = ({
 			lockScroll={false}
 			trapFocus={false}
 			overlayProps={{
-				backgroundOpacity: 0.4,
-				blur: 2,
+				backgroundOpacity: 0.6,
+				blur: 3,
 			}}
 			transitionProps={{
 				transition: 'fade',
@@ -92,7 +104,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
 			}}
 			title={
 				<>
-					<Text fw={500} fz="lg">
+					<Text fw={500} fz="lg" c="light-dark(var(--mantine-color-dark-9), var(--mantine-color-gray-0))">
 						{title}
 					</Text>
 					{description && (
@@ -174,7 +186,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 				onClick: onClose,
 			}}
 		>
-			<Text>{message}</Text>
+			<Text c="light-dark(var(--mantine-color-dark-6), var(--mantine-color-gray-2))">{message}</Text>
 		</BaseModal>
 	);
 };
