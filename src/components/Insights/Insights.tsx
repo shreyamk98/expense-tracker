@@ -10,10 +10,13 @@ import {
   Badge,
   useMantineTheme
 } from '@mantine/core';
-import { PieChart, AreaChart, BarChart } from '@mantine/charts';
+import { PieChart, BarChart } from '@mantine/charts';
 import { useAppContext } from '../../context/AppContext';
 import { formatCategory, formatTimePeriod } from '../../utils/formatters';
 import { ExpenseCategory, PaymentType, TimePeriod } from '../../types/enums';
+import { BudgetConsumptionChart } from './BudgetConsumptionChart';
+import { ExpenseFrequencyChart } from './ExpenseFrequencyChart';
+import { CategoryComparisonChart } from './CategoryComparisonChart';
 
 export const Insights: React.FC = () => {
   const { state, formatCurrency } = useAppContext();
@@ -79,8 +82,15 @@ export const Insights: React.FC = () => {
     };
   }).filter(item => item.value > 0);
 
-  // Monthly trends data
-  const monthlyTrends = getMonthlyTrends(expenses);
+  // Budget consumption data
+  const budgetConsumptionData = getBudgetConsumptionData(filteredExpenses, budgets, theme);
+  const totalBudget = budgets.reduce((sum, budget) => sum + budget.limit, 0);
+
+  // Expense frequency data
+  const expenseFrequencyData = getExpenseFrequencyData(filteredExpenses, theme);
+
+  // Category comparison data
+  const categoryComparisonData = getCategoryComparisonData(expenses, theme);
 
   // Daily spending pattern
   const dailyPattern = getDailyPattern(filteredExpenses);
@@ -251,27 +261,29 @@ export const Insights: React.FC = () => {
 
       {/* Charts Row 2 */}
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
-        {/* Monthly Trends */}
-        <Card p="md" withBorder>
-          <Text fw={500} mb="md">Monthly Trends</Text>
-          {monthlyTrends.length > 0 ? (
-            <AreaChart
-              h={300}
-              data={monthlyTrends}
-              dataKey="month"
-              series={[{ name: 'amount', color: 'expense.6' }]}
-              curveType="linear"
-              withGradient
-              withXAxis
-              withYAxis
-              withTooltip
-            />
-          ) : (
-            <Text ta="center" c="dimmed" py="xl">
-              No data available
-            </Text>
-          )}
-        </Card>
+        {/* Budget Consumption */}
+        <BudgetConsumptionChart
+          data={budgetConsumptionData}
+          totalSpent={totalSpent}
+          totalBudget={totalBudget}
+          formatCurrency={formatCurrency}
+          hasBudget={budgets.length > 0 && totalBudget > 0}
+        />
+
+        {/* Expense Frequency Analysis */}
+        <ExpenseFrequencyChart
+          data={expenseFrequencyData}
+          formatCurrency={formatCurrency}
+        />
+      </SimpleGrid>
+
+      {/* Charts Row 3 */}
+      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+        {/* Category Comparison */}
+        <CategoryComparisonChart
+          data={categoryComparisonData}
+          formatCurrency={formatCurrency}
+        />
 
         {/* Daily Spending Pattern */}
         <Card p="md" withBorder>
@@ -295,9 +307,9 @@ export const Insights: React.FC = () => {
       </SimpleGrid>
 
       {/* Budget Analysis */}
-      {budgetAnalysis.length > 0 && (
-        <Card p="md" withBorder>
-          <Text fw={500} mb="md">Budget Analysis</Text>
+      <Card p="md" withBorder>
+        <Text fw={500} mb="md">Budget Analysis</Text>
+        {budgetAnalysis.length > 0 ? (
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
             {budgetAnalysis.map((budget) => (
               <Card key={budget.id} p="sm" withBorder>
@@ -344,8 +356,17 @@ export const Insights: React.FC = () => {
               </Card>
             ))}
           </SimpleGrid>
-        </Card>
-      )}
+        ) : (
+          <Stack gap="sm" align="center" py="xl">
+            <Text ta="center" c="dimmed" size="lg">
+              No budgets configured
+            </Text>
+            <Text size="sm" ta="center" c="dimmed" maw={400}>
+              Set up budgets for different expense categories to track your spending limits and get detailed budget analysis insights.
+            </Text>
+          </Stack>
+        )}
+      </Card>
     </Stack>
   );
 };
@@ -385,26 +406,79 @@ function getPaymentTypeLabel(type: PaymentType): string {
   return labels[type];
 }
 
-function getMonthlyTrends(expenses: any[]) {
-  const months = [];
+function getBudgetConsumptionData(expenses: any[], budgets: any[], theme: any) {
+  return budgets.map(budget => {
+    const categoryExpenses = expenses.filter(exp => exp.category === budget.category);
+    const spent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const percentage = (spent / budget.limit) * 100;
+    
+    return {
+      category: formatCategory(budget.category),
+      spent,
+      budget: budget.limit,
+      percentage,
+      color: getCategoryColor(budget.category, theme)
+    };
+  }).filter(item => item.budget > 0);
+}
+
+function getExpenseFrequencyData(expenses: any[], theme: any) {
+  const categoryFrequency = Object.values(ExpenseCategory).map(category => {
+    const categoryExpenses = expenses.filter(exp => exp.category === category);
+    const frequency = categoryExpenses.length;
+    const totalAmount = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const avgAmount = frequency > 0 ? totalAmount / frequency : 0;
+    
+    return {
+      category: formatCategory(category),
+      frequency,
+      avgAmount,
+      totalAmount,
+      color: getCategoryColor(category, theme)
+    };
+  }).filter(item => item.frequency > 0);
+  
+  return categoryFrequency;
+}
+
+function getCategoryComparisonData(expenses: any[], theme: any) {
   const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
   
-  for (let i = 5; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const monthName = date.toLocaleDateString('en-US', { month: 'short' });
-    
-    const monthExpenses = expenses.filter(expense => {
-      const expenseDate = new Date(expense.date);
-      return expenseDate.getMonth() === date.getMonth() && 
-             expenseDate.getFullYear() === date.getFullYear();
-    });
-    
-    const amount = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    
-    months.push({ month: monthName, amount });
-  }
+  const currentMonthExpenses = expenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+  });
   
-  return months;
+  const previousMonthExpenses = expenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    return expenseDate.getMonth() === prevMonth && expenseDate.getFullYear() === prevYear;
+  });
+  
+  return Object.values(ExpenseCategory).map(category => {
+    const currentAmount = currentMonthExpenses
+      .filter(exp => exp.category === category)
+      .reduce((sum, exp) => sum + exp.amount, 0);
+    
+    const previousAmount = previousMonthExpenses
+      .filter(exp => exp.category === category)
+      .reduce((sum, exp) => sum + exp.amount, 0);
+    
+    const change = currentAmount - previousAmount;
+    const changePercent = previousAmount > 0 ? (change / previousAmount) * 100 : 0;
+    
+    return {
+      category: formatCategory(category),
+      currentMonth: currentAmount,
+      previousMonth: previousAmount,
+      change,
+      changePercent,
+      color: getCategoryColor(category, theme)
+    };
+  }).filter(item => item.currentMonth > 0 || item.previousMonth > 0);
 }
 
 function getDailyPattern(expenses: any[]) {

@@ -187,9 +187,16 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ expense, onSubmit, onC
 
 				<DateInput
 					label="Date"
+					placeholder="Select date"
 					value={formData.date}
 					onChange={(date) => setFormData((prev) => ({ ...prev, date: date ? new Date(date) : new Date() }))}
+					valueFormat="MMMM DD, YYYY"
+					clearable
 					required
+					popoverProps={{
+						withinPortal: true,
+						zIndex: 1000,
+					}}
 				/>
 
 				<TextInput

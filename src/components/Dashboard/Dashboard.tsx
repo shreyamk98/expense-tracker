@@ -12,13 +12,14 @@ import {
   ActionIcon,
   useMantineTheme
 } from '@mantine/core';
-import { PieChart, AreaChart } from '@mantine/charts';
 import { Plus, TrendingUp, Calendar } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { CurrencyIcon } from '../common/CurrencyIcon';
 import { ReceiptIcon } from '../common/ReceiptIcon';
 import { formatDate, formatCategory } from '../../utils/formatters';
 import { ExpenseCategory, PaymentType } from '../../types/enums';
+import { ExpenseSizeDistribution } from '../Insights/ExpenseSizeDistribution';
+import { CategorySummaryCards } from './CategorySummaryCards';
 
 interface DashboardProps {
   onAddExpense?: () => void;
@@ -89,14 +90,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5);
 
-  // Category breakdown for pie chart
+  // Category breakdown for summary cards
   const categoryData = Object.values(ExpenseCategory).map(category => {
     const categoryExpenses = monthlyExpenses.filter(exp => exp.category === category);
     const amount = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
     return {
       name: formatCategory(category),
       value: amount,
-      color: getCategoryColor(category, theme)
+      color: getCategoryColor(category, theme),
+      count: categoryExpenses.length
     };
   }).filter(item => item.value > 0);
 
@@ -111,8 +113,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
   }).filter(item => item.value > 0);
 
-  // Weekly trends for area chart
-  const weeklyData = getWeeklyTrends(expenses);
+  // Expense size distribution data
+  const expenseSizeData = getExpenseSizeDistribution(monthlyExpenses, theme);
 
   // Budget progress
   const budgetProgress = budgets.map(budget => {
@@ -206,55 +208,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </Card>
       </SimpleGrid>
 
-      {/* Charts Row */}
-      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
-        {/* Category Breakdown */}
-        <Card p="md" withBorder>
-          <Group justify="space-between" mb="md">
-            <Text fw={500}>Category Breakdown</Text>
-            <Button variant="subtle" size="xs" onClick={handleViewInsights}>
-              View Details
-            </Button>
-          </Group>
-          {categoryData.length > 0 ? (
-            <PieChart
-              data={categoryData}
-              size={200}
-              withTooltip
-              tooltipDataSource="segment"
-              mx="auto"
-            />
-          ) : (
-            <Text ta="center" c="dimmed" py="xl">
-              No expenses this month
-            </Text>
-          )}
-        </Card>
+      {/* Category Summary */}
+      <CategorySummaryCards
+        data={categoryData}
+        totalSpent={totalSpent}
+        formatCurrency={formatCurrency}
+        onViewDetails={handleViewInsights}
+      />
 
-        {/* Weekly Trends */}
-        <Card p="md" withBorder>
-          <Group justify="space-between" mb="md">
-            <Text fw={500}>Weekly Trends</Text>
-            <Button variant="subtle" size="xs" onClick={handleViewInsights}>
-              View Details
-            </Button>
-          </Group>
-          {weeklyData.length > 0 ? (
-            <AreaChart
-              h={200}
-              data={weeklyData}
-              dataKey="week"
-              series={[{ name: 'amount', color: 'expense.6' }]}
-              curveType="linear"
-              withGradient
-            />
-          ) : (
-            <Text ta="center" c="dimmed" py="xl">
-              No data available
-            </Text>
-          )}
-        </Card>
-      </SimpleGrid>
+      {/* Expense Size Distribution */}
+      <ExpenseSizeDistribution
+        data={expenseSizeData}
+        totalExpenses={monthlyExpenses.length}
+        formatCurrency={formatCurrency}
+      />
 
       {/* Budget Progress & Recent Expenses */}
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
@@ -263,7 +230,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <Group justify="space-between" mb="md">
             <Text fw={500}>Budget Progress</Text>
             <Button variant="subtle" size="xs" onClick={handleManageBudgets}>
-              Manage Budgets
+              {budgetProgress.length > 0 ? 'Manage Budgets' : 'Set Budgets'}
             </Button>
           </Group>
           <Stack gap="sm">
@@ -289,9 +256,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
               ))
             ) : (
-              <Text ta="center" c="dimmed" py="md">
-                No budgets set
-              </Text>
+              <Stack gap="sm" align="center" py="md">
+                <Text ta="center" c="dimmed">
+                  No budgets set yet
+                </Text>
+                <Text size="xs" ta="center" c="dimmed">
+                  Create budgets to track your spending limits and get insights on your financial goals
+                </Text>
+              </Stack>
             )}
           </Stack>
         </Card>
@@ -371,22 +343,43 @@ function getPaymentTypeLabel(type: PaymentType): string {
   return labels[type];
 }
 
-function getWeeklyTrends(expenses: any[]) {
-  const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
-  
-  return weeks.map((week, index) => {
-    const weekStart = new Date(currentYear, currentMonth, index * 7 + 1);
-    const weekEnd = new Date(currentYear, currentMonth, (index + 1) * 7);
-    
-    const weekExpenses = expenses.filter(expense => {
-      const expenseDate = new Date(expense.date);
-      return expenseDate >= weekStart && expenseDate <= weekEnd;
-    });
-    
-    const amount = weekExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    
-    return { week, amount };
-  });
+function getExpenseSizeDistribution(expenses: any[], theme: any) {
+  if (expenses.length === 0) return [];
+
+  const amounts = expenses.map(exp => exp.amount).sort((a, b) => a - b);
+  const total = amounts.reduce((sum, amount) => sum + amount, 0);
+  const avg = total / amounts.length;
+
+  // Define size categories based on data distribution
+  const small = amounts.filter(amount => amount < avg * 0.5);
+  const medium = amounts.filter(amount => amount >= avg * 0.5 && amount < avg * 1.5);
+  const large = amounts.filter(amount => amount >= avg * 1.5);
+
+  const smallTotal = small.reduce((sum, amount) => sum + amount, 0);
+  const mediumTotal = medium.reduce((sum, amount) => sum + amount, 0);
+  const largeTotal = large.reduce((sum, amount) => sum + amount, 0);
+
+  return [
+    {
+      name: 'Small Expenses',
+      value: smallTotal,
+      count: small.length,
+      color: theme.colors.green[6],
+      range: `< ${(avg * 0.5).toFixed(0)}`
+    },
+    {
+      name: 'Medium Expenses',
+      value: mediumTotal,
+      count: medium.length,
+      color: theme.colors.yellow[6],
+      range: `${(avg * 0.5).toFixed(0)} - ${(avg * 1.5).toFixed(0)}`
+    },
+    {
+      name: 'Large Expenses',
+      value: largeTotal,
+      count: large.length,
+      color: theme.colors.red[6],
+      range: `> ${(avg * 1.5).toFixed(0)}`
+    }
+  ].filter(item => item.count > 0);
 }

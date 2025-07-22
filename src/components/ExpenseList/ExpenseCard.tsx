@@ -1,5 +1,15 @@
 import React from 'react';
-import { Card, Text, Group, Badge, ActionIcon, Stack, useMantineTheme, rem } from '@mantine/core';
+import {
+	Card,
+	Text,
+	Group,
+	Badge,
+	ActionIcon,
+	Stack,
+	useMantineTheme,
+	rem,
+	useMantineColorScheme,
+} from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { Edit, Trash2, Receipt } from 'lucide-react';
 import { ExpenseCardMenu } from './ExpenseCardMenu';
@@ -24,54 +34,79 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
 	getPaymentMethodDisplay,
 }) => {
 	const theme = useMantineTheme();
+	const { colorScheme } = useMantineColorScheme();
 	const isMobile = useMediaQuery('(max-width: 768px)');
+	const isDark = colorScheme === 'dark';
 
 	const getCategoryColor = (category: ExpenseCategory): string => {
 		const colors: Record<ExpenseCategory, string> = {
-			[ExpenseCategory.FOOD]: theme.colors.red[6],
-			[ExpenseCategory.TRAVEL]: theme.colors.teal[6],
-			[ExpenseCategory.UTILITIES]: theme.colors.blue[6],
-			[ExpenseCategory.SUBSCRIPTIONS]: theme.colors.green[6],
-			[ExpenseCategory.ENTERTAINMENT]: theme.colors.yellow[6],
-			[ExpenseCategory.HEALTHCARE]: theme.colors.pink[6],
-			[ExpenseCategory.SHOPPING]: theme.colors.violet[6],
-			[ExpenseCategory.OTHER]: theme.colors.gray[6],
+			[ExpenseCategory.FOOD]: isDark ? theme.colors.red[4] : theme.colors.red[6],
+			[ExpenseCategory.TRAVEL]: isDark ? theme.colors.teal[4] : theme.colors.teal[6],
+			[ExpenseCategory.UTILITIES]: isDark ? theme.colors.blue[4] : theme.colors.blue[6],
+			[ExpenseCategory.SUBSCRIPTIONS]: isDark ? theme.colors.green[4] : theme.colors.green[6],
+			[ExpenseCategory.ENTERTAINMENT]: isDark ? theme.colors.yellow[4] : theme.colors.yellow[6],
+			[ExpenseCategory.HEALTHCARE]: isDark ? theme.colors.pink[4] : theme.colors.pink[6],
+			[ExpenseCategory.SHOPPING]: isDark ? theme.colors.violet[4] : theme.colors.violet[6],
+			[ExpenseCategory.OTHER]: isDark ? theme.colors.gray[4] : theme.colors.gray[6],
 		};
 		return colors[category];
 	};
 
-	const getCategoryColorLight = (category: ExpenseCategory): string => {
-		const colors: Record<ExpenseCategory, string> = {
-			[ExpenseCategory.FOOD]: theme.colors.red[1],
-			[ExpenseCategory.TRAVEL]: theme.colors.teal[1],
-			[ExpenseCategory.UTILITIES]: theme.colors.blue[1],
-			[ExpenseCategory.SUBSCRIPTIONS]: theme.colors.green[1],
-			[ExpenseCategory.ENTERTAINMENT]: theme.colors.yellow[1],
-			[ExpenseCategory.HEALTHCARE]: theme.colors.pink[1],
-			[ExpenseCategory.SHOPPING]: theme.colors.violet[1],
-			[ExpenseCategory.OTHER]: theme.colors.gray[1],
+	const getCategoryBadgeColors = (category: ExpenseCategory) => {
+		const colorMap: Record<ExpenseCategory, string> = {
+			[ExpenseCategory.FOOD]: 'red',
+			[ExpenseCategory.TRAVEL]: 'teal',
+			[ExpenseCategory.UTILITIES]: 'blue',
+			[ExpenseCategory.SUBSCRIPTIONS]: 'green',
+			[ExpenseCategory.ENTERTAINMENT]: 'yellow',
+			[ExpenseCategory.HEALTHCARE]: 'pink',
+			[ExpenseCategory.SHOPPING]: 'violet',
+			[ExpenseCategory.OTHER]: 'gray',
 		};
-		return colors[category];
+
+		const colorName = colorMap[category];
+		return {
+			backgroundColor: isDark ? theme.colors[colorName][9] : theme.colors[colorName][1],
+			color: isDark ? theme.colors[colorName][3] : theme.colors[colorName][7],
+			borderColor: isDark ? theme.colors[colorName][7] : theme.colors[colorName][3],
+		};
 	};
 
-	const getPaymentMethodColor = (type: PaymentType): string => {
-		const colors: Record<PaymentType, string> = {
-			[PaymentType.CASH]: theme.colors.green[6],
-			[PaymentType.CREDIT_CARD]: theme.colors.expense[6],
-			[PaymentType.DEBIT_CARD]: theme.colors.blue[6],
-			[PaymentType.UPI]: theme.colors.primary[6],
+	const getPaymentMethodBadgeColors = (type: PaymentType) => {
+		const colorMap: Record<PaymentType, string> = {
+			[PaymentType.CASH]: 'green',
+			[PaymentType.CREDIT_CARD]: 'expense',
+			[PaymentType.DEBIT_CARD]: 'blue',
+			[PaymentType.UPI]: 'primary',
 		};
-		return colors[type];
+
+		const colorName = colorMap[type];
+		return {
+			backgroundColor: isDark ? theme.colors[colorName][9] : theme.colors[colorName][1],
+			color: isDark ? theme.colors[colorName][3] : theme.colors[colorName][7],
+			borderColor: isDark ? theme.colors[colorName][7] : theme.colors[colorName][3],
+		};
 	};
 
-	const getPaymentMethodColorLight = (type: PaymentType): string => {
-		const colors: Record<PaymentType, string> = {
-			[PaymentType.CASH]: theme.colors.green[1],
-			[PaymentType.CREDIT_CARD]: theme.colors.expense[1],
-			[PaymentType.DEBIT_CARD]: theme.colors.blue[1],
-			[PaymentType.UPI]: theme.colors.primary[1],
+	const getActionIconColors = (colorName: string) => ({
+		backgroundColor: isDark ? theme.colors[colorName][9] : theme.colors[colorName][1],
+		color: isDark ? theme.colors[colorName][4] : theme.colors[colorName][7],
+	});
+
+	const getHoverBackgroundColor = (category: ExpenseCategory): string => {
+		const colorMap: Record<ExpenseCategory, string> = {
+			[ExpenseCategory.FOOD]: 'red',
+			[ExpenseCategory.TRAVEL]: 'teal',
+			[ExpenseCategory.UTILITIES]: 'blue',
+			[ExpenseCategory.SUBSCRIPTIONS]: 'green',
+			[ExpenseCategory.ENTERTAINMENT]: 'yellow',
+			[ExpenseCategory.HEALTHCARE]: 'pink',
+			[ExpenseCategory.SHOPPING]: 'violet',
+			[ExpenseCategory.OTHER]: 'gray',
 		};
-		return colors[type];
+
+		const colorName = colorMap[category];
+		return isDark ? theme.colors[colorName][9] : theme.colors[colorName][1];
 	};
 
 	const handleEdit = () => onEdit(expense);
@@ -96,7 +131,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
 						transform: 'translateY(-1px)',
 						boxShadow: theme.shadows.md,
 						borderLeftWidth: rem(6),
-						backgroundColor: getCategoryColorLight(expense.category),
+						backgroundColor: getHoverBackgroundColor(expense.category),
 					},
 				},
 			}}
@@ -104,7 +139,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
 			<Group justify="space-between" align="flex-start" gap={isMobile ? 0 : 'xs'}>
 				<Stack gap="xs" style={{ flex: 1 }}>
 					<Group justify="space-between">
-						<Text fw={600} size="md" c="dark.8">
+						<Text fw={600} size="md" c={isDark ? 'gray.1' : 'dark.8'}>
 							{expense.description}
 						</Text>
 						<Text fw={700} size="lg" c="expense.6">
@@ -113,26 +148,10 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
 					</Group>
 
 					<Group gap="xs">
-						<Badge
-							variant="light"
-							style={{
-								backgroundColor: getCategoryColorLight(expense.category),
-								color: getCategoryColor(expense.category),
-								border: `1px solid ${getCategoryColor(expense.category)}`,
-								fontWeight: 500,
-							}}
-						>
+						<Badge variant="light" style={getCategoryBadgeColors(expense.category)}>
 							{formatCategory(expense.category)}
 						</Badge>
-						<Badge
-							variant="light"
-							style={{
-								backgroundColor: getPaymentMethodColorLight(expense.paymentMethod.type),
-								color: getPaymentMethodColor(expense.paymentMethod.type),
-								border: `1px solid ${getPaymentMethodColor(expense.paymentMethod.type)}`,
-								fontWeight: 500,
-							}}
-						>
+						<Badge variant="light" style={getPaymentMethodBadgeColors(expense.paymentMethod.type)}>
 							{getPaymentMethodDisplay(expense)}
 						</Badge>
 						<Text size="sm" c="dimmed" fw={400}>
@@ -177,10 +196,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
 								color="blue"
 								size="md"
 								onClick={handleViewReceipt}
-								style={{
-									backgroundColor: theme.colors.blue[1],
-									color: theme.colors.blue[7],
-								}}
+								style={getActionIconColors('blue')}
 							>
 								<Receipt size={18} />
 							</ActionIcon>
@@ -191,10 +207,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
 							color="yellow"
 							size="md"
 							onClick={handleEdit}
-							style={{
-								backgroundColor: theme.colors.yellow[1],
-								color: theme.colors.yellow[7],
-							}}
+							style={getActionIconColors('yellow')}
 						>
 							<Edit size={18} />
 						</ActionIcon>
@@ -204,10 +217,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
 							color="red"
 							size="md"
 							onClick={handleDelete}
-							style={{
-								backgroundColor: theme.colors.red[1],
-								color: theme.colors.red[7],
-							}}
+							style={getActionIconColors('red')}
 						>
 							<Trash2 size={18} />
 						</ActionIcon>

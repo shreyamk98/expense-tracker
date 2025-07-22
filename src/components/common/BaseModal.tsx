@@ -6,6 +6,7 @@ const StyledModal = styled(Modal)`
 	padding: 0;
 	.mantine-Modal-content {
 		border-radius: 12px;
+		overflow: visible;
 	}
 	.mantine-Modal-header {
 		padding-left: 16px;
@@ -14,6 +15,7 @@ const StyledModal = styled(Modal)`
 	}
 	.mantine-Modal-body {
 		padding: 0;
+		overflow: visible;
 	}
 `;
 
@@ -78,6 +80,8 @@ export const BaseModal: React.FC<BaseModalProps> = ({
 			size={size}
 			centered={centered}
 			withCloseButton={false}
+			lockScroll={false}
+			trapFocus={false}
 			overlayProps={{
 				backgroundOpacity: 0.4,
 				blur: 2,
