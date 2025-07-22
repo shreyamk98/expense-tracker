@@ -89,17 +89,8 @@ const AppWithAuth: React.FC = () => {
 		setColorScheme(isDarkMode ? 'dark' : 'light');
 	}, [authState.currentUser?.preferences?.darkMode]);
 
-	// Create a stable theme object to prevent unnecessary re-renders
-	const themeWithColorScheme = React.useMemo(
-		() => ({
-			...theme,
-			colorScheme,
-		}),
-		[colorScheme]
-	);
-
 	return (
-		<MantineProvider theme={themeWithColorScheme} defaultColorScheme={colorScheme} forceColorScheme={colorScheme}>
+		<MantineProvider theme={theme} defaultColorScheme={colorScheme} forceColorScheme={colorScheme}>
 			<ProtectedRoute>
 				<AppProvider>
 					<Router>

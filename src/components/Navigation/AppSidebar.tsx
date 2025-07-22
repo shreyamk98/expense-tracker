@@ -6,7 +6,8 @@ import {
   Stack,
   Divider,
   ScrollArea,
-  rem
+  rem,
+  useMantineTheme
 } from '@mantine/core';
 import {
   LayoutDashboard,
@@ -28,6 +29,7 @@ export const AppSidebar: React.FC<SidebarProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useMantineTheme();
 
   const getCurrentPath = () => {
     const path = location.pathname;
@@ -83,9 +85,9 @@ export const AppSidebar: React.FC<SidebarProps> = ({
 
   return (
     <AppShell.Navbar
-      w={navigationState.isCollapsed ? rem(60) : rem(280)}
+      w={navigationState.isCollapsed ? theme.other.sidebarCollapsedWidth : theme.other.sidebarWidth}
       style={{
-        transition: 'width 0.2s ease-in-out'
+        transition: theme.other.navigationTransition
       }}
     >
       <ScrollArea h="100%">
@@ -99,20 +101,20 @@ export const AppSidebar: React.FC<SidebarProps> = ({
               active={item.isActive}
               onClick={() => handleNavigation(item)}
               style={{
-                borderRadius: rem(8),
-                marginBottom: rem(4)
+                borderRadius: theme.other.navLinkBorderRadius,
+                marginBottom: theme.other.navLinkMargin
               }}
               styles={{
                 root: {
-                  padding: navigationState.isCollapsed ? rem(12) : rem(12),
+                  padding: theme.other.navLinkPadding,
                   justifyContent: navigationState.isCollapsed ? 'center' : 'flex-start'
                 },
                 label: {
-                  fontSize: rem(14),
+                  fontSize: theme.other.navLinkFontSize,
                   fontWeight: 500
                 },
                 section: {
-                  marginRight: navigationState.isCollapsed ? 0 : rem(12)
+                  marginRight: navigationState.isCollapsed ? 0 : theme.other.navLinkIconMargin
                 }
               }}
             />
@@ -129,20 +131,20 @@ export const AppSidebar: React.FC<SidebarProps> = ({
               active={item.isActive}
               onClick={() => handleNavigation(item)}
               style={{
-                borderRadius: rem(8),
-                marginBottom: rem(4)
+                borderRadius: theme.other.navLinkBorderRadius,
+                marginBottom: theme.other.navLinkMargin
               }}
               styles={{
                 root: {
-                  padding: navigationState.isCollapsed ? rem(12) : rem(12),
+                  padding: theme.other.navLinkPadding,
                   justifyContent: navigationState.isCollapsed ? 'center' : 'flex-start'
                 },
                 label: {
-                  fontSize: rem(14),
+                  fontSize: theme.other.navLinkFontSize,
                   fontWeight: 500
                 },
                 section: {
-                  marginRight: navigationState.isCollapsed ? 0 : rem(12)
+                  marginRight: navigationState.isCollapsed ? 0 : theme.other.navLinkIconMargin
                 }
               }}
             />

@@ -8,7 +8,8 @@ import {
   Menu,
   ActionIcon,
   Burger,
-  rem
+  rem,
+  useMantineTheme
 } from '@mantine/core';
 import {
   User,
@@ -29,6 +30,7 @@ export const AppHeader: React.FC<HeaderProps> = ({
   onSignOut
 }) => {
   const navigate = useNavigate();
+  const theme = useMantineTheme();
 
   const handleProfileClick = () => {
     navigate('/profile');
@@ -38,7 +40,7 @@ export const AppHeader: React.FC<HeaderProps> = ({
     navigate('/settings');
   };
   return (
-    <AppShell.Header h={rem(60)}>
+    <AppShell.Header h={theme.other.headerHeight}>
       <Group justify="space-between" h="100%" px="md">
         {/* Left side - Logo and navigation controls */}
         <Group gap="md">

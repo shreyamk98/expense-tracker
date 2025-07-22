@@ -7,7 +7,8 @@ import {
   Select,
   SimpleGrid,
   Progress,
-  Badge
+  Badge,
+  useMantineTheme
 } from '@mantine/core';
 import { PieChart, AreaChart, BarChart } from '@mantine/charts';
 import { useAppContext } from '../../context/AppContext';
@@ -18,6 +19,7 @@ export const Insights: React.FC = () => {
   const { state, formatCurrency } = useAppContext();
   const { expenses, budgets } = state;
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>(TimePeriod.MONTH);
+  const theme = useMantineTheme();
 
   // Filter expenses based on selected period
   const getFilteredExpenses = () => {
@@ -57,7 +59,7 @@ export const Insights: React.FC = () => {
       name: formatCategory(category),
       value: amount,
       percentage: percentage.toFixed(1),
-      color: getCategoryColor(category),
+      color: getCategoryColor(category, theme),
       count: categoryExpenses.length
     };
   }).filter(item => item.value > 0);
@@ -72,7 +74,7 @@ export const Insights: React.FC = () => {
       name: getPaymentTypeLabel(type),
       value: amount,
       percentage: percentage.toFixed(1),
-      color: getPaymentTypeColor(type),
+      color: getPaymentTypeColor(type, theme),
       count: paymentExpenses.length
     };
   }).filter(item => item.value > 0);
@@ -348,30 +350,30 @@ export const Insights: React.FC = () => {
   );
 };
 
-// Helper functions (same as Dashboard)
-function getCategoryColor(category: ExpenseCategory): string {
+// Helper functions - Updated to use theme colors
+const getCategoryColor = (category: ExpenseCategory, theme: any): string => {
   const colors: Record<ExpenseCategory, string> = {
-    [ExpenseCategory.FOOD]: '#ff6b6b',
-    [ExpenseCategory.TRAVEL]: '#4ecdc4',
-    [ExpenseCategory.UTILITIES]: '#45b7d1',
-    [ExpenseCategory.SUBSCRIPTIONS]: '#96ceb4',
-    [ExpenseCategory.ENTERTAINMENT]: '#feca57',
-    [ExpenseCategory.HEALTHCARE]: '#ff9ff3',
-    [ExpenseCategory.SHOPPING]: '#54a0ff',
-    [ExpenseCategory.OTHER]: '#c7ecee'
+    [ExpenseCategory.FOOD]: theme.colors.red[6],
+    [ExpenseCategory.TRAVEL]: theme.colors.teal[6],
+    [ExpenseCategory.UTILITIES]: theme.colors.blue[6],
+    [ExpenseCategory.SUBSCRIPTIONS]: theme.colors.green[6],
+    [ExpenseCategory.ENTERTAINMENT]: theme.colors.yellow[6],
+    [ExpenseCategory.HEALTHCARE]: theme.colors.pink[6],
+    [ExpenseCategory.SHOPPING]: theme.colors.violet[6],
+    [ExpenseCategory.OTHER]: theme.colors.gray[6]
   };
   return colors[category];
-}
+};
 
-function getPaymentTypeColor(type: PaymentType): string {
+const getPaymentTypeColor = (type: PaymentType, theme: any): string => {
   const colors: Record<PaymentType, string> = {
-    [PaymentType.CASH]: '#2ecc71',
-    [PaymentType.CREDIT_CARD]: '#e74c3c',
-    [PaymentType.DEBIT_CARD]: '#3498db',
-    [PaymentType.UPI]: '#9b59b6'
+    [PaymentType.CASH]: theme.colors.income[6],
+    [PaymentType.CREDIT_CARD]: theme.colors.expense[6],
+    [PaymentType.DEBIT_CARD]: theme.colors.blue[6],
+    [PaymentType.UPI]: theme.colors.primary[6]
   };
   return colors[type];
-}
+};
 
 function getPaymentTypeLabel(type: PaymentType): string {
   const labels: Record<PaymentType, string> = {

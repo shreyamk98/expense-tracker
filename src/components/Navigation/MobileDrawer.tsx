@@ -8,7 +8,8 @@ import {
   ScrollArea,
   rem,
   Text,
-  Group
+  Group,
+  useMantineTheme
 } from '@mantine/core';
 import {
   LayoutDashboard,
@@ -38,6 +39,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useMantineTheme();
 
   const getCurrentPath = () => {
     const path = location.pathname;
@@ -96,7 +98,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
     <Drawer
       opened={opened}
       onClose={onClose}
-      size="280px"
+      size={theme.other.sidebarWidth}
       padding="md"
       title={
         <Group>
@@ -107,7 +109,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
       }
       styles={{
         header: {
-          paddingBottom: rem(16)
+          paddingBottom: theme.spacing.md
         }
       }}
     >
@@ -122,19 +124,19 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
               active={item.isActive}
               onClick={() => handleTabChange(item)}
               style={{
-                borderRadius: rem(8)
+                borderRadius: theme.other.navLinkBorderRadius
               }}
               styles={{
                 root: {
-                  padding: rem(16),
+                  padding: theme.spacing.md,
                   minHeight: rem(48)
                 },
                 label: {
-                  fontSize: rem(16),
+                  fontSize: theme.fontSizes.md,
                   fontWeight: 500
                 },
                 section: {
-                  marginRight: rem(16)
+                  marginRight: theme.spacing.md
                 }
               }}
             />
@@ -151,19 +153,19 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
               active={item.isActive}
               onClick={() => handleTabChange(item)}
               style={{
-                borderRadius: rem(8)
+                borderRadius: theme.other.navLinkBorderRadius
               }}
               styles={{
                 root: {
-                  padding: rem(16),
+                  padding: theme.spacing.md,
                   minHeight: rem(48)
                 },
                 label: {
-                  fontSize: rem(16),
+                  fontSize: theme.fontSizes.md,
                   fontWeight: 500
                 },
                 section: {
-                  marginRight: rem(16)
+                  marginRight: theme.spacing.md
                 }
               }}
             />

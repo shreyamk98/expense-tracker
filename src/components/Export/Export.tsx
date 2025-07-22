@@ -9,7 +9,8 @@ import {
   MultiSelect,
   Switch,
   Badge,
-  Divider
+  Divider,
+  useMantineTheme
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { Download, FileText, Database, FileImage } from 'lucide-react';
@@ -20,6 +21,7 @@ import { formatCategory } from '../../utils/formatters';
 export const Export: React.FC = () => {
   const { state, formatCurrency } = useAppContext();
   const { expenses } = state;
+  const theme = useMantineTheme();
 
   const [exportFormat, setExportFormat] = useState<ExportFormat>(ExportFormat.CSV);
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -156,9 +158,9 @@ export const Export: React.FC = () => {
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            .summary { background-color: #f9f9f9; padding: 15px; border-radius: 5px; }
+            th, td { border: 1px solid var(--mantine-color-default-border); padding: 8px; text-align: left; }
+            th { background-color: var(--mantine-color-gray-1); }
+            .summary { background-color: var(--mantine-color-gray-0); padding: 15px; border-radius: ${theme.defaultRadius}; }
           </style>
         </head>
         <body>

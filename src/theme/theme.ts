@@ -63,7 +63,12 @@ const theme = createTheme({
     headerHeight: rem(60),
     sidebarWidth: rem(280),
     sidebarCollapsedWidth: rem(60),
-    navigationTransition: '0.2s ease-in-out'
+    navigationTransition: '0.2s ease-in-out',
+    navLinkPadding: rem(12),
+    navLinkBorderRadius: rem(8),
+    navLinkMargin: rem(4),
+    navLinkFontSize: rem(14),
+    navLinkIconMargin: rem(12)
   }
 });
 

@@ -12,7 +12,8 @@ import {
   NumberInput,
   ActionIcon,
   Badge,
-  Divider
+  Divider,
+  useMantineTheme
 } from '@mantine/core';
 import { Plus, Edit, Trash2, CreditCard, Smartphone } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
@@ -26,6 +27,7 @@ export const Settings: React.FC = () => {
   const { authState, updateProfile } = useAuth();
   const { settings, paymentMethods } = state;
   const currentUser = authState.currentUser;
+  const theme = useMantineTheme();
 
   const [cardModalOpen, setCardModalOpen] = useState(false);
   const [upiModalOpen, setUpiModalOpen] = useState(false);
@@ -156,7 +158,7 @@ export const Settings: React.FC = () => {
             <Text size="sm" fw={500} mb="xs">Cards</Text>
             <Stack gap="xs">
               {paymentMethods.cards.map((card) => (
-                <Group key={card.id} justify="space-between" p="sm" style={{ border: '1px solid #e9ecef', borderRadius: '8px' }}>
+                <Group key={card.id} justify="space-between" p="sm" style={{ border: `1px solid var(--mantine-color-default-border)`, borderRadius: theme.defaultRadius }}>
                   <Group gap="sm">
                     <ActionIcon variant="light" color="blue" size="sm">
                       <CreditCard size={16} />
@@ -209,7 +211,7 @@ export const Settings: React.FC = () => {
             <Text size="sm" fw={500} mb="xs">UPI Apps</Text>
             <Stack gap="xs">
               {paymentMethods.upiApps.map((upi) => (
-                <Group key={upi.id} justify="space-between" p="sm" style={{ border: '1px solid #e9ecef', borderRadius: '8px' }}>
+                <Group key={upi.id} justify="space-between" p="sm" style={{ border: `1px solid var(--mantine-color-default-border)`, borderRadius: theme.defaultRadius }}>
                   <Group gap="sm">
                     <ActionIcon variant="light" color="purple" size="sm">
                       <Smartphone size={16} />

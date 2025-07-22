@@ -114,42 +114,40 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
 
 	// Desktop layout
 	return (
-		<Card p="md">
-			<Stack gap="sm">
-				<Group justify="space-between">
-					<Text fw={500}>Filters</Text>
-					<Button variant="subtle" size="xs" onClick={onClearFilters}>
-						Clear All
-					</Button>
-				</Group>
+		<Stack gap="sm">
+			<Group justify="space-between">
+				<Text fw={500}>Filters</Text>
+				<Button variant="subtle" size="xs" onClick={onClearFilters}>
+					Clear All
+				</Button>
+			</Group>
 
-				<SimpleGrid cols={4} spacing="sm">
-					<TextInput
-						placeholder="Search expenses..."
-						value={searchTerm}
-						onChange={(e) => onSearchChange(e.target.value)}
-						leftSection={<Search size={16} />}
-					/>
+			<SimpleGrid cols={4} spacing="sm">
+				<TextInput
+					placeholder="Search expenses..."
+					value={searchTerm}
+					onChange={(e) => onSearchChange(e.target.value)}
+					leftSection={<Search size={16} />}
+				/>
 
-					<Select
-						placeholder="Category"
-						data={categoryOptions}
-						value={categoryFilter}
-						onChange={onCategoryChange}
-						clearable
-					/>
+				<Select
+					placeholder="Category"
+					data={categoryOptions}
+					value={categoryFilter}
+					onChange={onCategoryChange}
+					clearable
+				/>
 
-					<Select
-						placeholder="Payment Method"
-						data={paymentOptions}
-						value={paymentFilter}
-						onChange={onPaymentChange}
-						clearable
-					/>
+				<Select
+					placeholder="Payment Method"
+					data={paymentOptions}
+					value={paymentFilter}
+					onChange={onPaymentChange}
+					clearable
+				/>
 
-					<DateInput placeholder="Filter by date" value={dateFilter} onChange={onDateChange} clearable />
-				</SimpleGrid>
-			</Stack>
-		</Card>
+				<DateInput placeholder="Filter by date" value={dateFilter} onChange={onDateChange} clearable />
+			</SimpleGrid>
+		</Stack>
 	);
 };
