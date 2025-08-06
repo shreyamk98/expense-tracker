@@ -3,6 +3,10 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 import { baseApi } from './api/baseApi';
 import authReducer from './slices/authSlice';
 import uiReducer from './slices/uiSlice';
+import settingsReducer from './slices/settingsSlice';
+// Import API endpoints to register them
+import './api/expenseApi';
+import './api/budgetApi';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +16,7 @@ export const store = configureStore({
     // Client state slices
     auth: authReducer,
     ui: uiReducer,
+    settings: settingsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

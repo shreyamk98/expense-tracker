@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Text, Group, Stack, Select, SimpleGrid, useMantineTheme } from '@mantine/core';
 import { PieChart, BarChart } from '@mantine/charts';
-import { useAppContext } from '../../context/AppContext';
+import { useExpenseRTK } from '../../hooks/useExpenseRTK';
+import { useGetBudgetsQuery } from '../../store/api/budgetApi';
+import { useAppData } from '../../hooks/useAppData';
 import { formatTimePeriod } from '../../utils/formatters';
 import { TimePeriod } from '../../types/enums';
 
@@ -27,8 +29,9 @@ import {
 import { getFilteredExpenses } from './utils/insightsUtils';
 
 export const Insights: React.FC = () => {
-  const { state, formatCurrency } = useAppContext();
-  const { expenses, budgets } = state;
+  const { expenses } = useExpenseRTK();
+  const { data: budgets = [] } = useGetBudgetsQuery();
+  const { formatCurrency } = useAppData();
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>(TimePeriod.MONTH);
   const theme = useMantineTheme();
 

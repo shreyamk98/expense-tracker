@@ -16,16 +16,28 @@ import {
 } from '@mantine/core';
 import { Plus, Edit, Trash2, CreditCard, Smartphone } from 'lucide-react';
 import { FormModal } from '../common/BaseModal';
-import { useAppContext } from '../../context/AppContext';
+import { useGetPaymentMethodsQuery, useCreateCardMutation, useUpdateCardMutation, useDeleteCardMutation, useCreateUPIAppMutation, useUpdateUPIAppMutation, useDeleteUPIAppMutation } from '../../store/api/budgetApi';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { updateSettings, setCurrency } from '../../store/slices/settingsSlice';
+import { setColorScheme } from '../../store/slices/uiSlice';
 import { useAuth } from '../../context/AuthContext';
+import { useAppData } from '../../hooks/useAppData';
 import { PaymentMethodFormProps } from '../../types/schema';
 import { UPIApp, CardType, ExpenseCategory, PaymentType, NotificationPreference, TimePeriod } from '../../types/enums';
 import { formatCategory } from '../../utils/formatters';
 
 export const Settings: React.FC = () => {
-  const { state, updateSettings, addCard, updateCard, deleteCard, addUPIApp, updateUPIApp, deleteUPIApp, getCurrentCurrency, isDarkMode } = useAppContext();
+  const dispatch = useAppDispatch();
+  const settings = useAppSelector((state) => state.settings.settings);
+  const { data: paymentMethods } = useGetPaymentMethodsQuery();
   const { authState, updateProfile } = useAuth();
-  const { settings, paymentMethods } = state;
+  const { getCurrentCurrency, isDarkMode } = useAppData();
+  const [createCard] = useCreateCardMutation();
+  const [updateCard] = useUpdateCardMutation();
+  const [deleteCard] = useDeleteCardMutation();
+  const [createUPIApp] = useCreateUPIAppMutation();
+  const [updateUPIApp] = useUpdateUPIAppMutation();
+  const [deleteUPIApp] = useDeleteUPIAppMutation();
   const currentUser = authState.currentUser;
   const theme = useMantineTheme();
 
@@ -35,8 +47,8 @@ export const Settings: React.FC = () => {
   const [editingUPI, setEditingUPI] = useState<any>(null);
 
   const handleDarkModeToggle = async (checked: boolean) => {
-    // Update both contexts
-    updateSettings({ darkMode: checked });
+    // Update UI store
+    dispatch(setColorScheme(checked ? 'dark' : 'light'));
     
     if (currentUser) {
       await updateProfile({
@@ -49,8 +61,8 @@ export const Settings: React.FC = () => {
   };
 
   const handleCurrencyChange = async (currency: string) => {
-    // Update both contexts
-    updateSettings({ currency });
+    // Update settings store
+    dispatch(setCurrency(currency));
     
     if (currentUser) {
       await updateProfile({
@@ -72,12 +84,20 @@ export const Settings: React.FC = () => {
     setUpiModalOpen(true);
   };
 
-  const handleDeleteCard = (id: string) => {
-    deleteCard(id);
+  const handleDeleteCard = async (id: string) => {
+    try {
+      await deleteCard(id).unwrap();
+    } catch (error) {
+      console.error('Failed to delete card:', error);
+    }
   };
 
-  const handleDeleteUPI = (id: string) => {
-    deleteUPIApp(id);
+  const handleDeleteUPI = async (id: string) => {
+    try {
+      await deleteUPIApp(id).unwrap();
+    } catch (error) {
+      console.error('Failed to delete UPI app:', error);
+    }
   };
 
   return (
@@ -156,8 +176,8 @@ export const Settings: React.FC = () => {
           {/* Cards */}
           <div>
             <Text size="sm" fw={500} mb="xs">Cards</Text>
-            <Stack gap="xs">
-              {paymentMethods.cards.map((card) => (
+        <Stack gap="xs">
+              {(paymentMethods?.cards || []).map((card) => (
                 <Group key={card.id} justify="space-between" p="sm" style={{ border: `1px solid var(--mantine-color-default-border)`, borderRadius: theme.defaultRadius }}>
                   <Group gap="sm">
                     <ActionIcon variant="light" color="blue" size="sm">
@@ -196,7 +216,7 @@ export const Settings: React.FC = () => {
                   </Group>
                 </Group>
               ))}
-              {paymentMethods.cards.length === 0 && (
+              {(paymentMethods?.cards || []).length === 0 && (
                 <Text size="sm" c="dimmed" ta="center" py="md">
                   No cards added yet
                 </Text>
@@ -210,7 +230,7 @@ export const Settings: React.FC = () => {
           <div>
             <Text size="sm" fw={500} mb="xs">UPI Apps</Text>
             <Stack gap="xs">
-              {paymentMethods.upiApps.map((upi) => (
+              {(paymentMethods?.upiApps || []).map((upi) => (
                 <Group key={upi.id} justify="space-between" p="sm" style={{ border: `1px solid var(--mantine-color-default-border)`, borderRadius: theme.defaultRadius }}>
                   <Group gap="sm">
                     <ActionIcon variant="light" color="purple" size="sm">
@@ -243,7 +263,7 @@ export const Settings: React.FC = () => {
                   </Group>
                 </Group>
               ))}
-              {paymentMethods.upiApps.length === 0 && (
+              {(paymentMethods?.upiApps || []).length === 0 && (
                 <Text size="sm" c="dimmed" ta="center" py="md">
                   No UPI apps added yet
                 </Text>
@@ -272,14 +292,18 @@ export const Settings: React.FC = () => {
           setCardModalOpen(false);
           setEditingCard(null);
         }}
-        onSubmit={(cardData) => {
-          if (editingCard) {
-            updateCard(editingCard.id, cardData);
-          } else {
-            addCard(cardData);
+        onSubmit={async (cardData) => {
+          try {
+            if (editingCard) {
+              await updateCard({ id: editingCard.id, card: cardData }).unwrap();
+            } else {
+              await createCard(cardData).unwrap();
+            }
+            setCardModalOpen(false);
+            setEditingCard(null);
+          } catch (error) {
+            console.error('Failed to save card:', error);
           }
-          setCardModalOpen(false);
-          setEditingCard(null);
         }}
         editingCard={editingCard}
       />
@@ -291,14 +315,18 @@ export const Settings: React.FC = () => {
           setUpiModalOpen(false);
           setEditingUPI(null);
         }}
-        onSubmit={(upiData) => {
-          if (editingUPI) {
-            updateUPIApp(editingUPI.id, upiData);
-          } else {
-            addUPIApp(upiData);
+        onSubmit={async (upiData) => {
+          try {
+            if (editingUPI) {
+              await updateUPIApp({ id: editingUPI.id, upiApp: upiData }).unwrap();
+            } else {
+              await createUPIApp(upiData).unwrap();
+            }
+            setUpiModalOpen(false);
+            setEditingUPI(null);
+          } catch (error) {
+            console.error('Failed to save UPI app:', error);
           }
-          setUpiModalOpen(false);
-          setEditingUPI(null);
         }}
         editingUPI={editingUPI}
       />
