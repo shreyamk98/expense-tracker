@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { MantineProvider, AppShell, Container } from '@mantine/core';
+import { Provider } from 'react-redux';
 import theme from './theme/theme';
+import { store } from './store';
 import { AppProvider } from './context/AppContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { AppHeader } from './components/Navigation/AppHeader';
 import { AppSidebar } from './components/Navigation/AppSidebar';
@@ -81,23 +84,25 @@ const ExpenseTrackerContent: React.FC = () => {
 };
 
 const AppWithAuth: React.FC = () => {
-	const { authState } = useAuth();
-	const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light');
+	return (
+		<ProtectedRoute>
+			<AppProvider>
+				<Router>
+					<ExpenseTrackerContent />
+				</Router>
+			</AppProvider>
+		</ProtectedRoute>
+	);
+};
 
-	useEffect(() => {
-		const isDarkMode = authState.currentUser?.preferences?.darkMode || false;
-		setColorScheme(isDarkMode ? 'dark' : 'light');
-	}, [authState.currentUser?.preferences?.darkMode]);
+const AppWithTheme: React.FC = () => {
+	const { colorScheme } = useTheme();
 
 	return (
 		<MantineProvider theme={theme} defaultColorScheme={colorScheme} forceColorScheme={colorScheme}>
-			<ProtectedRoute>
-				<AppProvider>
-					<Router>
-						<ExpenseTrackerContent />
-					</Router>
-				</AppProvider>
-			</ProtectedRoute>
+			<AuthProvider>
+				<AppWithAuth />
+			</AuthProvider>
 		</MantineProvider>
 	);
 };
@@ -105,9 +110,11 @@ const AppWithAuth: React.FC = () => {
 export const ExpenseTrackerApp: React.FC = () => {
 	return (
 		<ErrorBoundary>
-			<AuthProvider>
-				<AppWithAuth />
-			</AuthProvider>
+			<Provider store={store}>
+				<ThemeProvider>
+					<AppWithTheme />
+				</ThemeProvider>
+			</Provider>
 		</ErrorBoundary>
 	);
 };
