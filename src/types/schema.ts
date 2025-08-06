@@ -153,6 +153,7 @@ export interface User {
 	lastLoginAt: string;
 	preferences: UserPreferences;
 	profileSetupStep: ProfileSetupStep;
+	hashedPassword?: string; // Only used internally, never exposed to frontend
 }
 
 export interface UserPreferences {

@@ -6,21 +6,31 @@ const StyledModal = styled(Modal)`
 	padding: 0;
 	.mantine-Modal-content {
 		border-radius: 12px;
-		overflow: visible;
+		overflow: hidden;
 		background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
 		border: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
 		box-shadow: light-dark(0 10px 25px rgba(0, 0, 0, 0.1), 0 10px 25px rgba(0, 0, 0, 0.4));
+		display: flex;
+		flex-direction: column;
+		max-height: 90vh;
 	}
 	.mantine-Modal-header {
 		padding-left: 16px;
 		padding-right: 16px;
 		border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
 		background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+		flex-shrink: 0;
 	}
 	.mantine-Modal-body {
 		padding: 0;
-		overflow: visible;
+		overflow: hidden;
 		background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+		border-bottom-left-radius: 12px;
+		border-bottom-right-radius: 12px;
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-height: 0;
 	}
 	.mantine-Modal-overlay {
 		background: light-dark(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
@@ -33,6 +43,7 @@ const ModalContent = styled.div`
 	overflow-y: auto;
 	padding: 16px;
 	background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+	min-height: 0;
 `;
 
 const ModalFooter = styled(Group)`
@@ -92,8 +103,8 @@ export const BaseModal: React.FC<BaseModalProps> = ({
 			size={size}
 			centered={centered}
 			withCloseButton={false}
-			lockScroll={false}
-			trapFocus={false}
+			lockScroll={true}
+			trapFocus={true}
 			overlayProps={{
 				backgroundOpacity: 0.6,
 				blur: 3,

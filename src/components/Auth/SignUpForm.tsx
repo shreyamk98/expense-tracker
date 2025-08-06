@@ -56,6 +56,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn }) => {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      newErrors.password = 'Password must contain uppercase, lowercase, and number';
     }
 
     if (formData.password !== formData.confirmPassword) {
@@ -72,11 +74,12 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn }) => {
 
   const getPasswordStrength = (password: string) => {
     let strength = 0;
-    if (password.length >= 8) strength += 25;
-    if (/[a-z]/.test(password)) strength += 25;
-    if (/[A-Z]/.test(password)) strength += 25;
-    if (/[0-9]/.test(password)) strength += 12.5;
-    if (/[^A-Za-z0-9]/.test(password)) strength += 12.5;
+    if (password.length >= 8) strength += 20;
+    if (password.length >= 12) strength += 10;
+    if (/[a-z]/.test(password)) strength += 20;
+    if (/[A-Z]/.test(password)) strength += 20;
+    if (/[0-9]/.test(password)) strength += 15;
+    if (/[^A-Za-z0-9]/.test(password)) strength += 15;
     return Math.min(strength, 100);
   };
 

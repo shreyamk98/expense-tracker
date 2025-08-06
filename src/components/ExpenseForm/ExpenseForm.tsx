@@ -193,6 +193,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ expense, onSubmit, onC
 					valueFormat="MMMM DD, YYYY"
 					clearable
 					required
+					maxDate={new Date()}
 					popoverProps={{
 						withinPortal: true,
 						zIndex: 1000,
