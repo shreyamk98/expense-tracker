@@ -64,6 +64,11 @@ export const getFilteredExpenses = (expenses: Expense[], period: TimePeriod): Ex
     case TimePeriod.WEEK:
       startDate.setDate(now.getDate() - 7);
       break;
+    case TimePeriod.THIS_MONTH:
+      // Start of current month
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+      break;
     case TimePeriod.MONTH:
       startDate.setMonth(now.getMonth() - 1);
       break;

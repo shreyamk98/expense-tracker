@@ -1,30 +1,30 @@
-import React, { useState } from 'react';
 import {
-	Card,
-	Text,
-	Group,
-	Stack,
-	Avatar,
-	Button,
-	TextInput,
-	Select,
-	Switch,
-	FileButton,
 	ActionIcon,
+	Avatar,
 	Badge,
+	Button,
+	Card,
 	Divider,
+	FileButton,
+	Group,
+	Select,
+	Stack,
+	Switch,
+	Text,
+	TextInput,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { Edit, Camera, LogOut, Trash2, Save, X } from 'lucide-react';
-import { ConfirmationModal } from '../common/BaseModal';
-import { useAuth } from '../../hooks/useAuth';
+import { Camera, Edit, LogOut, Save, Trash2, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { updateSettings, setCurrency } from '../../store/slices/settingsSlice';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { setCurrency } from '../../store/slices/settingsSlice';
 import { setColorScheme } from '../../store/slices/uiSlice';
+import { NotificationPreference, TimePeriod } from '../../types/enums';
 import { User } from '../../types/schema';
-import { TimePeriod, NotificationPreference } from '../../types/enums';
-import { formatUserInitials, formatNotificationPreference } from '../../utils/formatters';
+import { formatNotificationPreference, formatUserInitials } from '../../utils/formatters';
+import { ConfirmationModal } from '../common/BaseModal';
 
 export const UserProfile: React.FC = () => {
 	const { authState, updateProfile, signOut } = useAuth();
