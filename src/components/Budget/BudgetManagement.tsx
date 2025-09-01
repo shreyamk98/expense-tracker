@@ -16,11 +16,12 @@ import {
 } from '@mantine/core';
 import { Plus, Edit, Trash2, AlertTriangle, Target } from 'lucide-react';
 import { FormModal } from '../common/BaseModal';
-import { useAppContext } from '../../context/AppContext';
+import { useExpenseRTK } from '../../hooks/useExpenseRTK';
+import { useGetBudgetsQuery, useCreateBudgetMutation, useUpdateBudgetMutation, useDeleteBudgetMutation } from '../../store/api/budgetApi';
+import { useAppData } from '../../hooks/useAppData';
 import { formatCategory } from '../../utils/formatters';
 import { ExpenseCategory, TimePeriod } from '../../types/enums';
 import { Budget } from '../../types/schema';
-import { ExpenseService } from '../../services/expenseService';
 
 interface BudgetFormData {
 	category: ExpenseCategory;
@@ -29,8 +30,12 @@ interface BudgetFormData {
 }
 
 export const BudgetManagement: React.FC = () => {
-	const { state, setBudget, formatCurrency, getCurrentCurrency } = useAppContext();
-	const { budgets, expenses } = state;
+	const { expenses } = useExpenseRTK();
+	const { data: budgets = [] } = useGetBudgetsQuery();
+	const { formatCurrency, getCurrentCurrency } = useAppData();
+	const [createBudget] = useCreateBudgetMutation();
+	const [updateBudget] = useUpdateBudgetMutation();
+	const [deleteBudget] = useDeleteBudgetMutation();
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
@@ -114,20 +119,21 @@ export const BudgetManagement: React.FC = () => {
 		try {
 			if (editingBudget) {
 				// Update existing budget
-				const updatedBudget = await ExpenseService.updateBudget(editingBudget.id, {
-					category: formData.category,
-					limit: formData.limit,
-					period: formData.period,
-				});
-				setBudget(updatedBudget);
+				await updateBudget({
+					id: editingBudget.id,
+					budget: {
+						category: formData.category,
+						limit: formData.limit,
+						period: formData.period,
+					}
+				}).unwrap();
 			} else {
 				// Create new budget
-				const newBudget = await ExpenseService.createBudget({
+				await createBudget({
 					category: formData.category,
 					limit: formData.limit,
 					period: formData.period,
-				});
-				setBudget(newBudget);
+				}).unwrap();
 			}
 
 			handleCloseModal();
@@ -145,10 +151,7 @@ export const BudgetManagement: React.FC = () => {
 		}
 
 		try {
-			await ExpenseService.deleteBudget(budgetId);
-			// Remove from local state
-			setBudget({ id: budgetId } as Budget); // This will trigger removal in context
-			window.location.reload(); // Temporary solution to refresh data
+			await deleteBudget(budgetId).unwrap();
 		} catch (error) {
 			console.error('Failed to delete budget:', error);
 			alert('Failed to delete budget. Please try again.');

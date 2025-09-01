@@ -1,31 +1,36 @@
-import React, { useState } from 'react';
 import {
-	Card,
-	Text,
-	Group,
-	Stack,
-	Avatar,
-	Button,
-	TextInput,
-	Select,
-	Switch,
-	FileButton,
 	ActionIcon,
+	Avatar,
 	Badge,
+	Button,
+	Card,
 	Divider,
+	FileButton,
+	Group,
+	Select,
+	Stack,
+	Switch,
+	Text,
+	TextInput,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { Edit, Camera, LogOut, Trash2, Save, X } from 'lucide-react';
-import { ConfirmationModal } from '../common/BaseModal';
+import { Camera, Edit, LogOut, Save, Trash2, X } from 'lucide-react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useAppContext } from '../../context/AppContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { setCurrency } from '../../store/slices/settingsSlice';
+import { setColorScheme } from '../../store/slices/uiSlice';
+import { NotificationPreference, TimePeriod } from '../../types/enums';
 import { User } from '../../types/schema';
-import { TimePeriod, NotificationPreference } from '../../types/enums';
-import { formatUserInitials, formatNotificationPreference } from '../../utils/formatters';
+import { formatNotificationPreference, formatUserInitials } from '../../utils/formatters';
+import { ConfirmationModal } from '../common/BaseModal';
 
 export const UserProfile: React.FC = () => {
 	const { authState, updateProfile, signOut } = useAuth();
-	const { updateSettings, getCurrentCurrency, isDarkMode } = useAppContext();
+	const { colorScheme } = useTheme();
+	const dispatch = useAppDispatch();
+	const settings = useAppSelector((state) => state.settings.settings);
 	const [isEditing, setIsEditing] = useState(false);
 	const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 	const [profilePicture, setProfilePicture] = useState<File | null>(null);
@@ -60,10 +65,8 @@ export const UserProfile: React.FC = () => {
 			// Update app settings after profile update to avoid context issues
 			setTimeout(() => {
 				if (formData.preferences) {
-					updateSettings({
-						darkMode: formData.preferences.darkMode,
-						currency: formData.preferences.currency,
-					});
+					dispatch(setCurrency(formData.preferences.currency));
+					dispatch(setColorScheme(formData.preferences.darkMode ? 'dark' : 'light'));
 				}
 			}, 0);
 
@@ -341,10 +344,7 @@ export const UserProfile: React.FC = () => {
 									}));
 
 									// Immediately update settings for instant theme change
-									updateSettings({
-										darkMode: newDarkMode,
-										currency: formData.preferences?.currency || 'USD',
-									});
+									dispatch(setColorScheme(newDarkMode ? 'dark' : 'light'));
 								}}
 							/>
 						</>
@@ -353,7 +353,7 @@ export const UserProfile: React.FC = () => {
 							<Group justify="space-between">
 								<Text size="sm">Currency</Text>
 								<Text size="sm" fw={500}>
-									{getCurrentCurrency()}
+									{settings.currency}
 								</Text>
 							</Group>
 							<Group justify="space-between">
@@ -371,7 +371,7 @@ export const UserProfile: React.FC = () => {
 							<Group justify="space-between">
 								<Text size="sm">Dark Mode</Text>
 								<Text size="sm" fw={500}>
-									{isDarkMode() ? 'Enabled' : 'Disabled'}
+									{colorScheme === 'dark' ? 'Enabled' : 'Disabled'}
 								</Text>
 							</Group>
 						</Stack>

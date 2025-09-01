@@ -8,10 +8,12 @@ import { Export } from '../components/Export/Export';
 import { UserProfile } from '../components/Auth/UserProfile';
 import { Settings } from '../components/Settings/Settings';
 import { ExpenseForm } from '../components/ExpenseForm/ExpenseForm';
-import { useAppContext } from '../context/AppContext';
+import { useExpenseRTK } from '../hooks/useExpenseRTK';
+import { useGetPaymentMethodsQuery } from '../store/api/budgetApi';
 
 export const AppRoutes: React.FC = () => {
-  const { state, addExpense, updateExpense } = useAppContext();
+  const { addExpense, editExpense } = useExpenseRTK();
+  const { data: paymentMethods } = useGetPaymentMethodsQuery();
   const [expenseFormOpen, setExpenseFormOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<any>(null);
 
@@ -28,7 +30,7 @@ export const AppRoutes: React.FC = () => {
   const handleExpenseSubmit = async (expenseData: any) => {
     try {
       if (editingExpense) {
-        await updateExpense(editingExpense.id, expenseData);
+        await editExpense(editingExpense.id, expenseData);
       } else {
         await addExpense(expenseData);
       }
@@ -69,7 +71,7 @@ export const AppRoutes: React.FC = () => {
         onSubmit={handleExpenseSubmit}
         onCancel={handleExpenseCancel}
         isOpen={expenseFormOpen}
-        paymentMethods={state.paymentMethods}
+        paymentMethods={paymentMethods || { cards: [], upiApps: [] }}
       />
     </>
   );

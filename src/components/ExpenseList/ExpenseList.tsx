@@ -4,15 +4,19 @@ import { FilterSection } from './FilterSection';
 import { ExpenseCard } from './ExpenseCard';
 import { ExpenseListProps } from '../../types/schema';
 import { PaymentType } from '../../types/enums';
-import { useAppContext } from '../../context/AppContext';
+import { useExpenseRTK } from '../../hooks/useExpenseRTK';
+import { useGetPaymentMethodsQuery } from '../../store/api/budgetApi';
+import { useAppData } from '../../hooks/useAppData';
 import { BaseModal, ConfirmationModal } from '../common/BaseModal';
 
 export const ExpenseList: React.FC<ExpenseListProps> = ({ onEdit, onViewReceipt, paymentMethods }) => {
-	const { state, formatCurrency, deleteExpense } = useAppContext();
+	const { expenses, removeExpense } = useExpenseRTK();
+	const { data: paymentMethodsData } = useGetPaymentMethodsQuery();
+	const { formatCurrency } = useAppData();
 
-	// Use context data if props are not provided (for router-based navigation)
-	const expenseList = state.expenses;
-	const paymentMethodsData = paymentMethods || state.paymentMethods;
+	// Use RTK Query data if props are not provided (for router-based navigation)
+	const expenseList = expenses;
+	const paymentMethodsInfo = paymentMethods || paymentMethodsData || { cards: [], upiApps: [] };
 
 	const handleEdit =
 		onEdit ||
@@ -71,7 +75,7 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({ onEdit, onViewReceipt,
 		}
 
 		if (expense.paymentMethod.cardId) {
-			const card = paymentMethodsData.cards.find((c) => c.id === expense.paymentMethod.cardId);
+			const card = paymentMethodsInfo.cards.find((c) => c.id === expense.paymentMethod.cardId);
 			return card ? `${card.name} (*${card.lastFourDigits})` : 'Card';
 		}
 
@@ -91,7 +95,7 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({ onEdit, onViewReceipt,
 
 	const handleDeleteConfirm = async () => {
 		try {
-			await deleteExpense(expenseToDelete);
+			await removeExpense(expenseToDelete);
 			setDeleteModalOpen(false);
 			setExpenseToDelete('');
 		} catch (error) {

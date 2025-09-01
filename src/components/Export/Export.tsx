@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Card, Text, Group, Stack, Button, MultiSelect, Switch, Badge, Divider, useMantineTheme } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { Download, FileText, Database, FileImage } from 'lucide-react';
-import { useAppContext } from '../../context/AppContext';
+import { useGetExpensesQuery } from '../../store/api/expenseApi';
 import { ExportFormat, ExpenseCategory, PaymentType } from '../../types/enums';
-import { formatCategory } from '../../utils/formatters';
+import { formatCategory, formatCurrency } from '../../utils/formatters';
 
 export const Export: React.FC = () => {
-	const { state, formatCurrency } = useAppContext();
-	const { expenses } = state;
+	const { data: expensesData, isLoading } = useGetExpensesQuery({});
+	const expenses = expensesData?.data || [];
 	const theme = useMantineTheme();
 
 	const [exportFormat, setExportFormat] = useState<ExportFormat>(ExportFormat.CSV);

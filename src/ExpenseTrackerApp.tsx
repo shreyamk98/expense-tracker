@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { MantineProvider, AppShell, Container } from '@mantine/core';
+import { Provider } from 'react-redux';
 import theme from './theme/theme';
-import { AppProvider } from './context/AppContext';
+import { store } from './store';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { AppHeader } from './components/Navigation/AppHeader';
 import { AppSidebar } from './components/Navigation/AppSidebar';
 import { MobileDrawer } from './components/Navigation/MobileDrawer';
 import { AppRoutes } from './routes/AppRoutes';
-import { useAppContext } from './context/AppContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { useAuth, AuthProvider } from './context/AuthContext';
 import { useResponsiveNavigation } from './hooks/useResponsiveNavigation';
-import { LoadingOverlay } from './components/ExpenseTracker/LoadingOverlay';
 import { ErrorBoundary } from './components/ExpenseTracker/ErrorBoundary';
 
 const ExpenseTrackerContent: React.FC = () => {
-	const { isLoading } = useAppContext();
 	const { authState, signOut } = useAuth();
 	const { navigationState, toggleNavigation, closeNavigation, toggleCollapse } = useResponsiveNavigation();
 	const location = useLocation();
@@ -46,8 +45,6 @@ const ExpenseTrackerContent: React.FC = () => {
 			padding="md"
 			style={{ position: 'relative' }}
 		>
-			<LoadingOverlay visible={isLoading} message="Processing..." />
-
 			<AppHeader
 				navigationState={navigationState}
 				onToggleNavigation={toggleNavigation}
@@ -81,23 +78,21 @@ const ExpenseTrackerContent: React.FC = () => {
 };
 
 const AppWithAuth: React.FC = () => {
-	const { authState } = useAuth();
-	const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light');
+	return (
+		<ProtectedRoute>
+			<Router>
+				<ExpenseTrackerContent />
+			</Router>
+		</ProtectedRoute>
+	);
+};
 
-	useEffect(() => {
-		const isDarkMode = authState.currentUser?.preferences?.darkMode || false;
-		setColorScheme(isDarkMode ? 'dark' : 'light');
-	}, [authState.currentUser?.preferences?.darkMode]);
+const AppWithTheme: React.FC = () => {
+	const { colorScheme } = useTheme();
 
 	return (
 		<MantineProvider theme={theme} defaultColorScheme={colorScheme} forceColorScheme={colorScheme}>
-			<ProtectedRoute>
-				<AppProvider>
-					<Router>
-						<ExpenseTrackerContent />
-					</Router>
-				</AppProvider>
-			</ProtectedRoute>
+			<AppWithAuth />
 		</MantineProvider>
 	);
 };
@@ -105,9 +100,13 @@ const AppWithAuth: React.FC = () => {
 export const ExpenseTrackerApp: React.FC = () => {
 	return (
 		<ErrorBoundary>
-			<AuthProvider>
-				<AppWithAuth />
-			</AuthProvider>
+			<Provider store={store}>
+				<AuthProvider>
+					<ThemeProvider>
+						<AppWithTheme />
+					</ThemeProvider>
+				</AuthProvider>
+			</Provider>
 		</ErrorBoundary>
 	);
 };

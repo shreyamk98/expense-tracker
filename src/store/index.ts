@@ -1,0 +1,31 @@
+import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
+import { baseApi } from './api/baseApi';
+import uiReducer from './slices/uiSlice';
+import settingsReducer from './slices/settingsSlice';
+// Import API endpoints to register them
+import './api/expenseApi';
+import './api/budgetApi';
+
+export const store = configureStore({
+  reducer: {
+    // API slice
+    [baseApi.reducerPath]: baseApi.reducer,
+    
+    // Client state slices
+    ui: uiReducer,
+    settings: settingsReducer,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [baseApi.util.resetApiState.type],
+      },
+    }).concat(baseApi.middleware),
+});
+
+// Enable listener behavior for the store
+setupListeners(store.dispatch);
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

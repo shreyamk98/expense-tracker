@@ -186,7 +186,7 @@ class IndexedDBService {
 
 	// User operations
 	async createUser(userData: any): Promise<User> {
-		const user: User = {
+		const userWithPassword = {
 			id: this.generateId(),
 			email: userData.email,
 			firstName: userData.firstName,
@@ -207,10 +207,14 @@ class IndexedDBService {
 				language: 'en',
 			},
 			profileSetupStep: ProfileSetupStep.COMPLETED,
+			hashedPassword: userData.hashedPassword,
 		};
 
-		await this.add(STORES.USERS, user);
-		return user;
+		await this.add(STORES.USERS, userWithPassword);
+		
+		// Return user without password for security
+		const { hashedPassword, ...user } = userWithPassword;
+		return user as User;
 	}
 
 	async getUserByEmail(email: string): Promise<User | null> {

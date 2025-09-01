@@ -17,11 +17,12 @@ import { FormModal } from '../common/BaseModal';
 import { ExpenseFormProps } from '../../types/schema';
 import { ExpenseCategory, PaymentType, UPIApp } from '../../types/enums';
 import { formatCategory } from '../../utils/formatters';
-import { useAppContext } from '../../context/AppContext';
-import { ExpenseService } from '../../services/expenseService';
+import { useAppData } from '../../hooks/useAppData';
+import { useUploadReceiptMutation } from '../../store/api/expenseApi';
 
 export const ExpenseForm: React.FC<ExpenseFormProps> = ({ expense, onSubmit, onCancel, isOpen, paymentMethods }) => {
-	const { getCurrentCurrency } = useAppContext();
+	const { getCurrentCurrency } = useAppData();
+	const [uploadReceipt] = useUploadReceiptMutation();
 	const [formData, setFormData] = useState({
 		amount: 0,
 		date: new Date(),
@@ -103,10 +104,16 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ expense, onSubmit, onC
 		if (validateForm()) {
 			let receiptUrl = formData.receiptUrl;
 
-			// Upload receipt if a new file is selected - Real API only
+			// Upload receipt if a new file is selected
 			if (receiptFile) {
 				try {
-					receiptUrl = await ExpenseService.uploadReceipt(receiptFile);
+					const result = await uploadReceipt(receiptFile);
+					if ('data' in result) {
+						receiptUrl = result.data;
+					} else {
+						console.error('Failed to upload receipt:', result.error);
+						// Continue without receipt if upload fails
+					}
 				} catch (error) {
 					console.error('Failed to upload receipt:', error);
 					// Continue without receipt if upload fails
@@ -193,6 +200,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ expense, onSubmit, onC
 					valueFormat="MMMM DD, YYYY"
 					clearable
 					required
+					maxDate={new Date()}
 					popoverProps={{
 						withinPortal: true,
 						zIndex: 1000,

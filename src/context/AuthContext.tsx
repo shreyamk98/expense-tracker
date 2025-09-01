@@ -1,7 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AuthState, User, SignInFormData, SignUpFormData } from '../types/schema';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { 
+  useSignInMutation, 
+  useSignUpMutation, 
+  useSignOutMutation, 
+  useUpdateProfileMutation,
+  useGetCurrentUserQuery,
+  useCheckSessionQuery 
+} from '../store/api/authApi';
 import { AuthStatus } from '../types/enums';
-import { AuthService } from '../services/authService';
+import { SignInFormData, SignUpFormData, User, AuthState } from '../types/schema';
 
 interface AuthContextType {
   authState: AuthState;
@@ -11,6 +18,8 @@ interface AuthContextType {
   updateProfile: (profileData: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
+  currentUser: User | null;
+  refetchUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,146 +37,82 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [authState, setAuthState] = useState<AuthState>({
-    currentUser: null,
-    authStatus: AuthStatus.LOADING,
-    isLoading: false,
-    error: null
+  // RTK Query hooks - centralized in the provider
+  const [signInMutation, { isLoading: signInLoading }] = useSignInMutation();
+  const [signUpMutation, { isLoading: signUpLoading }] = useSignUpMutation();
+  const [signOutMutation, { isLoading: signOutLoading }] = useSignOutMutation();
+  const [updateProfileMutation, { isLoading: updateProfileLoading }] = useUpdateProfileMutation();
+  
+  // Get current user data
+  const { 
+    data: currentUser, 
+    isLoading: userLoading, 
+    error: userError,
+    refetch: refetchUser 
+  } = useGetCurrentUserQuery(undefined, {
+    skip: !localStorage.getItem('access_token'),
+  });
+  
+  // Check session validity
+  const { 
+    data: isSessionValid, 
+    isLoading: sessionLoading 
+  } = useCheckSessionQuery(undefined, {
+    pollingInterval: 5 * 60 * 1000, // Check every 5 minutes
   });
 
-  useEffect(() => {
-    // Check for existing session on mount - Real API only
-    const checkExistingSession = async () => {
-      try {
-        if (AuthService.isAuthenticated()) {
-          const user = await AuthService.getCurrentUser();
-          if (user) {
-            setAuthState({
-              currentUser: user,
-              authStatus: AuthStatus.AUTHENTICATED,
-              isLoading: false,
-              error: null
-            });
-          } else {
-            setAuthState(prev => ({
-              ...prev,
-              authStatus: AuthStatus.UNAUTHENTICATED,
-              isLoading: false
-            }));
-          }
-        } else {
-          setAuthState(prev => ({
-            ...prev,
-            authStatus: AuthStatus.UNAUTHENTICATED,
-            isLoading: false
-          }));
-        }
-      } catch (error) {
-        console.error('Session check failed:', error);
-        setAuthState(prev => ({
-          ...prev,
-          authStatus: AuthStatus.UNAUTHENTICATED,
-          isLoading: false,
-          error: 'Session validation failed'
-        }));
-      }
-    };
+  // Determine authentication status
+  const getAuthStatus = (): AuthStatus => {
+    if (userLoading || sessionLoading) return AuthStatus.LOADING;
+    if (currentUser && isSessionValid) return AuthStatus.AUTHENTICATED;
+    return AuthStatus.UNAUTHENTICATED;
+  };
 
-    checkExistingSession();
-  }, []);
+  const authStatus = getAuthStatus();
+  const isAuthenticated = authStatus === AuthStatus.AUTHENTICATED;
+  const isLoading = userLoading || sessionLoading || signInLoading || signUpLoading || signOutLoading || updateProfileLoading;
 
-  const signIn = async (credentials: SignInFormData) => {
-    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+  // Create auth state object
+  const authState: AuthState = {
+    currentUser: currentUser || null,
+    authStatus,
+    isLoading,
+    error: userError ? (typeof userError === 'string' ? userError : 'Authentication error') : null,
+  };
 
-    try {
-      // Use real authentication service only
-      const authResponse = await AuthService.signIn(credentials);
-      
-      setAuthState({
-        currentUser: authResponse.user,
-        authStatus: AuthStatus.AUTHENTICATED,
-        isLoading: false,
-        error: null
-      });
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Sign in failed'
-      }));
-      throw error;
+  const signIn = async (credentials: SignInFormData): Promise<void> => {
+    const result = await signInMutation(credentials);
+    if ('error' in result) {
+      const errorMessage = (result.error as any)?.error || (result.error as any)?.data || result.error || 'Sign in failed';
+      throw new Error(errorMessage);
+    }
+    // Refetch user data after successful sign in
+    refetchUser();
+  };
+
+  const signUp = async (userData: SignUpFormData): Promise<void> => {
+    const result = await signUpMutation(userData);
+    if ('error' in result) {
+      const errorMessage = (result.error as any)?.error || (result.error as any)?.data || result.error || 'Sign up failed';
+      throw new Error(errorMessage);
+    }
+    // Refetch user data after successful sign up
+    refetchUser();
+  };
+
+  const signOut = async (): Promise<void> => {
+    const result = await signOutMutation();
+    if ('error' in result) {
+      const errorMessage = (result.error as any)?.error || (result.error as any)?.data || result.error || 'Sign out failed';
+      throw new Error(errorMessage);
     }
   };
 
-  const signUp = async (userData: SignUpFormData) => {
-    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      // Use real authentication service only
-      const authResponse = await AuthService.signUp(userData);
-      
-      setAuthState({
-        currentUser: authResponse.user,
-        authStatus: AuthStatus.AUTHENTICATED,
-        isLoading: false,
-        error: null
-      });
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Sign up failed'
-      }));
-      throw error;
-    }
-  };
-
-  const signOut = async () => {
-    setAuthState(prev => ({ ...prev, isLoading: true }));
-
-    try {
-      // Use real authentication service only
-      await AuthService.signOut();
-
-      setAuthState({
-        currentUser: null,
-        authStatus: AuthStatus.UNAUTHENTICATED,
-        isLoading: false,
-        error: null
-      });
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Sign out failed'
-      }));
-    }
-  };
-
-  const updateProfile = async (profileData: Partial<User>) => {
-    if (!authState.currentUser) return;
-
-    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      // Use real authentication service only
-      const updatedUser = await AuthService.updateProfile(profileData);
-      
-      // Use React's batched updates to prevent context issues
-      React.startTransition(() => {
-        setAuthState(prev => ({
-          ...prev,
-          currentUser: updatedUser,
-          isLoading: false
-        }));
-      });
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Profile update failed'
-      }));
-      throw error;
+  const updateProfile = async (profileData: Partial<User>): Promise<void> => {
+    const result = await updateProfileMutation(profileData);
+    if ('error' in result) {
+      const errorMessage = (result.error as any)?.error || (result.error as any)?.data || result.error || 'Profile update failed';
+      throw new Error(errorMessage);
     }
   };
 
@@ -177,13 +122,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signUp,
     signOut,
     updateProfile,
-    isAuthenticated: authState.authStatus === AuthStatus.AUTHENTICATED,
-    isLoading: authState.isLoading
+    isAuthenticated,
+    isLoading,
+    currentUser: currentUser || null,
+    refetchUser,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
