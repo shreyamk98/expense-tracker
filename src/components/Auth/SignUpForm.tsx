@@ -12,7 +12,7 @@ import {
   Group
 } from '@mantine/core';
 import { Mail, Lock, User, AlertCircle, Check } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { SignUpFormData } from '../../types/schema';
 
 interface SignUpFormProps {

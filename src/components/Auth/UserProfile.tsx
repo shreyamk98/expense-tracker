@@ -17,7 +17,7 @@ import {
 import { DateInput } from '@mantine/dates';
 import { Edit, Camera, LogOut, Trash2, Save, X } from 'lucide-react';
 import { ConfirmationModal } from '../common/BaseModal';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../context/ThemeContext';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { updateSettings, setCurrency } from '../../store/slices/settingsSlice';

@@ -10,7 +10,7 @@ import { AppHeader } from './components/Navigation/AppHeader';
 import { AppSidebar } from './components/Navigation/AppSidebar';
 import { MobileDrawer } from './components/Navigation/MobileDrawer';
 import { AppRoutes } from './routes/AppRoutes';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { useAuth, AuthProvider } from './context/AuthContext';
 import { useResponsiveNavigation } from './hooks/useResponsiveNavigation';
 import { ErrorBoundary } from './components/ExpenseTracker/ErrorBoundary';
 
@@ -92,9 +92,7 @@ const AppWithTheme: React.FC = () => {
 
 	return (
 		<MantineProvider theme={theme} defaultColorScheme={colorScheme} forceColorScheme={colorScheme}>
-			<AuthProvider>
-				<AppWithAuth />
-			</AuthProvider>
+			<AppWithAuth />
 		</MantineProvider>
 	);
 };
@@ -103,9 +101,11 @@ export const ExpenseTrackerApp: React.FC = () => {
 	return (
 		<ErrorBoundary>
 			<Provider store={store}>
-				<ThemeProvider>
-					<AppWithTheme />
-				</ThemeProvider>
+				<AuthProvider>
+					<ThemeProvider>
+						<AppWithTheme />
+					</ThemeProvider>
+				</AuthProvider>
 			</Provider>
 		</ErrorBoundary>
 	);

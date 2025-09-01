@@ -20,7 +20,7 @@ import { useGetPaymentMethodsQuery, useCreateCardMutation, useUpdateCardMutation
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { updateSettings, setCurrency } from '../../store/slices/settingsSlice';
 import { setColorScheme } from '../../store/slices/uiSlice';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { useAppData } from '../../hooks/useAppData';
 import { PaymentMethodFormProps } from '../../types/schema';
 import { UPIApp, CardType, ExpenseCategory, PaymentType, NotificationPreference, TimePeriod } from '../../types/enums';

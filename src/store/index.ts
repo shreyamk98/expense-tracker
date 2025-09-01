@@ -1,7 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { baseApi } from './api/baseApi';
-import authReducer from './slices/authSlice';
 import uiReducer from './slices/uiSlice';
 import settingsReducer from './slices/settingsSlice';
 // Import API endpoints to register them
@@ -14,7 +13,6 @@ export const store = configureStore({
     [baseApi.reducerPath]: baseApi.reducer,
     
     // Client state slices
-    auth: authReducer,
     ui: uiReducer,
     settings: settingsReducer,
   },
